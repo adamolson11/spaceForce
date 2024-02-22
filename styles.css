@@ -1,0 +1,16 @@
+/* Custom styles for this layout */
+.bg {
+    /* The image used */
+    background-image: url("images/SpaceGameBackground.jpg");
+    /* Full height */
+    height: 100vh;
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  
+  .hero-content {
+    margin-bottom: 20px;
+  }
+  
