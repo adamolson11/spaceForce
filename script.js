@@ -22,6 +22,12 @@ class Player {
         else if (this.x > this.game.width - this.width) this.x = this.game.width - this.width;
 
     }
+    shoot(){
+        const projectile = this.game.getProjectile()
+        if (projectile) projectile.start(this.x, this.y); 
+
+
+    }
 }
 
 class Projectile {
@@ -45,7 +51,9 @@ class Projectile {
             this.y -= this.speed; // part is like saying, "Move the spaceship up by a little bit."
         }
     }
-    start (){
+    start (x,y){
+        this.x = x; 
+        this.y = y;
         this.free = false; 
     }
 
@@ -70,10 +78,12 @@ class Game { // like the brains of the whole thing
 
         this.projectilesPool = [];  
         this.numberOfProjectiles = 10; 
+        console.log(this.projectilesPool); 
 
         //event listeners for key board functions
         window.addEventListener('keydown', e => {
             if (this.keys.indexOf(e.key) === -1) this.keys.push(e.key)//push method add the specified elements to the end of an array and regurns the new length of the array.
+            if (e.key === '1') this.player.shoot(); 
            
         })
         window.addEventListener('keyup', e => {
@@ -89,6 +99,10 @@ class Game { // like the brains of the whole thing
        
         this.player.draw(context); 
         this.player.update(); 
+        this.projectilesPool.forEach(projectile => {
+            projectile.update(); 
+            projectile.draw(context); 
+        })
     }
 
     createProjectiles(){
@@ -96,6 +110,12 @@ class Game { // like the brains of the whole thing
                 this.projectilesPool.push(new Projectile()); // this is like putting the new bullet we made into our box of bullers
 
             }
+    }
+    getProjectile () {
+            for (let i = 0; i < this.projectilesPool.length; i++){
+                if (this.projectilesPool[i].free) return this.projectilesPool[i]; 
+            }
+
     }
 }
 // This line makes sure we're ready to start drawing when everything on the page is ready.
@@ -114,6 +134,8 @@ window.addEventListener('load', function(){
     canvas.height = 800;
 
     const game = new Game(canvas); // Create a new game using a canvas
+    game.createProjectiles(); //CHATGPT!!!!!!!!!!!!!!!!!!!!
+
 
 
 function animate(){
