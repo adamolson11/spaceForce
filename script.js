@@ -66,8 +66,33 @@ class Projectile {
 }
 
 class Enemy {
+    constructor(game){
+        this.game = game; 
+        this.width; 
+        this.height; 
+        this.x; 
+        this.y; 
 
+    }
+    draw(context){
+        context.strokeRect(this.x, this.y, this.width, this.height); 
+    }
 }
+
+class Wave {
+    constructor(game){
+        this.game = game; 
+        this.width = this.game.colums * this.game.enemySize; 
+        this.height= this.game.rows * this.game.enemySize; 
+        this.x = 0; 
+        this.y = 0;
+     }
+     render(context) {
+        
+        context.strokeRect(this.x, this.y, this.width, this.height); // Draw outline
+     }
+}
+
 
 class Game { // like the brains of the whole thing
     constructor(canvas){//blueprint for canvas 
@@ -79,7 +104,14 @@ class Game { // like the brains of the whole thing
 
         this.projectilesPool = [];  
         this.numberOfProjectiles = 10; 
-        console.log(this.projectilesPool); 
+        this.createProjectiles(); 
+
+        this.columns = 3; 
+        this.rows = 3; 
+        this.enemySize = 60;
+
+        this.waves = []; 
+        this.waves.push(new Wave(this)); 
 
         //event listeners for key board functions
         window.addEventListener('keydown', e => {
@@ -103,6 +135,10 @@ class Game { // like the brains of the whole thing
         this.projectilesPool.forEach(projectile => {
             projectile.update(); 
             projectile.draw(context); 
+        })
+        this.waves.forEach(wave => {
+            wave.render(context);
+
         })
     }
 
@@ -133,6 +169,10 @@ window.addEventListener('load', function(){
     
     // This line makes our canvas paper 800 pixels tall.
     canvas.height = 800;
+
+    ctx.fillStyle = 'white'; 
+    ctx.strokeStyle = 'white'; 
+    ctx.lineWidth = 5;
 
     const game = new Game(canvas); // Create a new game using a canvas
     game.createProjectiles(); //CHATGPT!!!!!!!!!!!!!!!!!!!!

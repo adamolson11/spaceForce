@@ -15,7 +15,7 @@
     margin-bottom: 20px;
   }
 
-  /*Below is all of the styling for the playPage.html and above for the Index.html*/
+  /*Below is all of the styling for the playPage.html and above for the Index.html---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 /* This is where we're talking about something called 'canvas1'. It's like saying 'Hey, computer, listen up!'
  */
@@ -35,4 +35,5 @@
   /* This line is supposed to center our 'canvas1' perfectly, but it's written wrong. We'll fix it later. */
   /* It's like saying, 'Move our 'canvas1' so it's just right in the middle.' */
   translate: -50% -50%; /*!!!!!!!!!!!!!!!!!!!!!!*/ 
+  background: url('background.png')
 }
