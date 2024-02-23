@@ -6,14 +6,21 @@ class Player {
         
         this.x = this.game.width * 0.5; 
         this.y = this.game.height- this.height; 
-        this.speed = 0; 
+        this.speed = 5; 
     }
     draw(context){
         context.fillRect(this.x, this.y, this.width, this.height); 
       
     }
     update(){
-        this.x += this.speed= 0;
+        // horizontal movement 
+        if (this.game.keys.indexOf('ArrowLeft') > -1) this.x -= this.speed;
+        if (this.game.keys.indexOf('ArrowRight') > -1) this.x += this.speed;
+
+        //horizontal boundaries prevents from going outside of the box
+        if (this.x < 0) this.x = 0;
+        else if (this.x > this.game.width - this.width) this.x = this.game.width - this.width;
+
     }
 }
 
@@ -36,19 +43,19 @@ class Game {
         //event listeners for key board functions
         window.addEventListener('keydown', e => {
             if (this.keys.indexOf(e.key) === -1) this.keys.push(e.key)//push method add the specified elements to the end of an array and regurns the new length of the array.
-            console.log(this.keys); 
+           
         })
         window.addEventListener('keyup', e => {
             const index = this.keys.indexOf(e.key);
             if (index > -1) {
                 this.keys.splice(index, 1);
-                console.log(this.keys);
+               
             }
         });
         
     }
     render(context){
-        // console.log(this.width, this.height); 
+       
         this.player.draw(context); 
         this.player.update(); 
     }
@@ -69,7 +76,7 @@ window.addEventListener('load', function(){
     canvas.height = 800;
 
     const game = new Game(canvas); // Create a new game using a canvas
-// console.log(game); // Display the game object in the console
+
 
 function animate(){
     ctx.clearRect(0,0, canvas.width, canvas.height); 
