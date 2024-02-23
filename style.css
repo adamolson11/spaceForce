@@ -17,7 +17,10 @@
 
   /*Below is all of the styling for the playPage.html and above for the Index.html*/
 
-/* This is where we're talking about something called 'canvas1'. It's like saying 'Hey, computer, listen up!' */
+/* This is where we're talking about something called 'canvas1'. It's like saying 'Hey, computer, listen up!'
+ */
+
+ /*Imagine canvas like a blank piece of paper on your computer screen so canvas1 is one piece of paper. This piece of code is describing how we want the page to look like instead of just being a white piece of paper.*/
 #canvas1 {
  
   border: 5px solid black;
@@ -31,5 +34,5 @@
   
   /* This line is supposed to center our 'canvas1' perfectly, but it's written wrong. We'll fix it later. */
   /* It's like saying, 'Move our 'canvas1' so it's just right in the middle.' */
-  translate: -50% -50%;
+  translate: -50% -50%; /*!!!!!!!!!!!!!!!!!!!!!!*/ 
 }
