@@ -77,19 +77,26 @@ class Enemy {
     draw(context){
         context.strokeRect(this.x, this.y, this.width, this.height); 
     }
+    update(){
+        
+    }
 }
 
 class Wave {
     constructor(game){
         this.game = game; 
-        this.width = this.game.colums * this.game.enemySize; 
+        this.width = this.game.columns * this.game.enemySize; 
         this.height= this.game.rows * this.game.enemySize; 
         this.x = 0; 
         this.y = 0;
+        this.speedX = 3; 
      }
      render(context) {
-        
         context.strokeRect(this.x, this.y, this.width, this.height); // Draw outline
+        this.x += this.speedX;
+        if (this.x < 0 || this.x > this.game.width - this.width){
+            this.speedX *= -1; 
+        }
      }
 }
 
@@ -111,6 +118,7 @@ class Game { // like the brains of the whole thing
         this.enemySize = 60;
 
         this.waves = []; 
+
         this.waves.push(new Wave(this)); 
 
         //event listeners for key board functions
@@ -175,7 +183,7 @@ window.addEventListener('load', function(){
     ctx.lineWidth = 5;
 
     const game = new Game(canvas); // Create a new game using a canvas
-    game.createProjectiles(); //CHATGPT!!!!!!!!!!!!!!!!!!!!
+    // game.createProjectiles(); //CHATGPT!!!!!!!!!!!!!!!!!!!!
 
 
 
