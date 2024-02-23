@@ -18,13 +18,13 @@ class Player {
         if (this.game.keys.indexOf('ArrowRight') > -1) this.x += this.speed;
 
         //horizontal boundaries prevents from going outside of the box
-        if (this.x < 0) this.x = 0;
-        else if (this.x > this.game.width - this.width) this.x = this.game.width - this.width;
+        if (this.x < -this.width * 0.5) this.x = -this.width * 0.5;
+        else if (this.x > this.game.width - this.width * 0.5) this.x = this.game.width -this.width *0.5;
 
     }
     shoot(){
         const projectile = this.game.getProjectile()
-        if (projectile) projectile.start(this.x, this.y); 
+        if (projectile) projectile.start(this.x + this.width * 0.5, this.y); 
 
 
     }
@@ -53,7 +53,7 @@ class Projectile {
         }
     }
     start (x,y){
-        this.x = x; 
+        this.x = x -this.width * 0.5; 
         this.y = y;
         this.free = false; 
     }
