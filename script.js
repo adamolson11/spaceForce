@@ -49,6 +49,7 @@ class Projectile {
     update(){
         if (!this.free){
             this.y -= this.speed; // part is like saying, "Move the spaceship up by a little bit."
+                if(this.y < -this.height) this.reset() // like saying "reload! the array"
         }
     }
     start (x,y){
