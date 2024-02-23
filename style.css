@@ -1,0 +1,35 @@
+/* Custom style for this layout */
+.bg {
+    /* The image used */
+    background-image: url("images/SpaceGameBackground.jpg");
+    /* Full height */
+    height: 100vh;
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  
+  .hero-content {
+    
+    margin-bottom: 20px;
+  }
+
+  /*Below is all of the styling for the playPage.html and above for the Index.html*/
+
+/* This is where we're talking about something called 'canvas1'. It's like saying 'Hey, computer, listen up!' */
+#canvas1 {
+ 
+  border: 5px solid black;
+  
+  /* We're telling the computer how we want to position our 'canvas1'. */
+  position: absolute;
+  
+  /* This line is saying, 'Put our 'canvas1' right in the middle of the screen, both from the top and left.' */
+  top: 50%; 
+  left: 50%;
+  
+  /* This line is supposed to center our 'canvas1' perfectly, but it's written wrong. We'll fix it later. */
+  /* It's like saying, 'Move our 'canvas1' so it's just right in the middle.' */
+  translate: -50% -50%;
+}
