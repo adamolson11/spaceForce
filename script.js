@@ -25,20 +25,51 @@ class Player {
 }
 
 class Projectile {
+    constructor(){
+        this.width = 4; 
+        this.height = 20; 
+        this.x = 0;  
+        this.y = 0; 
+        this.speed = 20 
+        this.free = true; //object pool cleaning and garbage collection
 
+    }
+    draw(context){
+        if (!this.free){
+            context.fillRect(this.x,this.y, this.width, this.height);    
+        }
+   
+    }
+    update(){
+        if (!this.free){
+            this.y -= this.speed; // part is like saying, "Move the spaceship up by a little bit."
+        }
+    }
+    start (){
+        this.free = false; 
+    }
+
+    reset(){
+        this.free = true; 
+    }
+
+    
 }
 
 class Enemy {
 
 }
 
-class Game {
+class Game { // like the brains of the whole thing
     constructor(canvas){//blueprint for canvas 
         this.canvas = canvas; //local instance of canvas limits it within the object
         this.width = this.canvas.width; //local instance of width and height
         this.height = this.canvas.height;
         this.keys = []; 
         this.player = new Player(this)
+
+        this.projectilesPool = [];  
+        this.numberOfProjectiles = 10; 
 
         //event listeners for key board functions
         window.addEventListener('keydown', e => {
@@ -58,6 +89,13 @@ class Game {
        
         this.player.draw(context); 
         this.player.update(); 
+    }
+
+    createProjectiles(){
+            for (let i = 0; i < this.numberOfProjectiles; i++){
+                this.projectilesPool.push(new Projectile()); // this is like putting the new bullet we made into our box of bullers
+
+            }
     }
 }
 // This line makes sure we're ready to start drawing when everything on the page is ready.
@@ -89,3 +127,6 @@ function animate(){
 animate();
 });
 
+
+
+//{} are purple for functions, blue for conditional statements, yellow for objects and arrays, and 
