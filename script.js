@@ -74,6 +74,8 @@ class Enemy {
         this.y= 0; 
         this.positionX= positionX; 
         this.positionY= positionY; 
+        this.markedForDeletion = false; 
+
 
     }
     draw(context){
@@ -82,6 +84,15 @@ class Enemy {
     update(x,y){
         this.x = x + this.positionX; 
         this.y = y + this.positionY; 
+        //check for projectiles. 
+        this.game.projectilesPool.forEach(projectile => {
+           if ( !projectile.free && this.game.checkCollision(this,projectile)) {
+                this.markedForDeletion = true;
+                projectile.reset(); 
+
+           }
+
+        })
     }
 }
 
@@ -112,6 +123,7 @@ class Wave {
                 enemy.draw(context); 
 
             })
+            this.enemies = this.enemies.filter(object => !object.markedForDeletion);
      }
      create(){
             for (let y = 0; y < this.game.rows; y++){
@@ -189,6 +201,17 @@ class Game { // like the brains of the whole thing
                 if (this.projectilesPool[i].free) return this.projectilesPool[i]; 
             }
 
+    }
+    // collision detection 
+    checkCollision(a, b){
+        return (
+            a.x < b.x + b.width && 
+            a.x + a.width > b.x &&
+            a.y < b.y + b.height && 
+            a.y + a.height > b.y
+            )
+
+        
     }
 }
 // This line makes sure we're ready to start drawing when everything on the page is ready.
