@@ -113,6 +113,7 @@ class Wave {
         this.speedX = 3; 
         this.speedY = 0; 
         this.enemies = []; 
+        this.nextWaveTrigger = false;
         this.create(); 
      }
      render(context) {
@@ -160,16 +161,17 @@ class Game { // like the brains of the whole thing
         this.numberOfProjectiles = 10; 
         this.createProjectiles(); 
 
-        this.columns = 5; 
-        this.rows = 3; 
+        this.columns = 2; 
+        this.rows = 2; 
         this.enemySize = 60;
 
         this.waves = []; 
 
         this.waves.push(new Wave(this)); 
+        this.waveCount = 1; 
 
         this.score = 0; 
-        this.gameOPver= false; 
+        this.gameOver = false; 
 
 
         //event listeners for key board functions
@@ -197,6 +199,9 @@ class Game { // like the brains of the whole thing
         })
         this.waves.forEach(wave => {
             wave.render(context);
+            if (wave.enemies.length < 1 && !wave.nextWaveTrigger && !this.gameOver)
+                this.newWave(); 
+            wave.nextWaveTrigger = true;
 
         })
     }
@@ -223,16 +228,29 @@ class Game { // like the brains of the whole thing
             )
         }
     drawStatusText(context) {
+        context.save();
+        context.shadowOffsetX = 2; 
+        context.shadowOffsetY = 2; 
+        context.shadowColor = 'black'; 
         context.fillText('Score: ' + this.score, 20, 40); 
-        if (this.gameOPver) {
+        context.fillText('Wave: ' + this.waveCount, 20, 80); 
+        if (this.gameOver) {
             context.textAlign= 'center'; 
             context.font = '100px Impact'; 
             context.fillText("GAME OVER!", this.width * 0.5, this.height * 0.5); 
         }
+    context.restore();
+    }
+    
+    newWave(){
+        this.columns++; 
+        this.rows++; 
+        this.waves.push(new Wave(this)); 
+
 
     }
         
-    }
+}
 // This line makes sure we're ready to start drawing when everything on the page is ready.
 window.addEventListener('load', function(){
     // This line gets a special paper from our webpage called a canvas.
