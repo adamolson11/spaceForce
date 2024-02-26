@@ -89,10 +89,17 @@ class Enemy {
            if ( !projectile.free && this.game.checkCollision(this,projectile)) {
                 this.markedForDeletion = true;
                 projectile.reset(); 
+                this.game.score++;
+              
 
            }
 
         })
+        if (this.y +this.height > this.game.height){
+            this.game.gameOver = true;
+            this.markedForDeletion = true;
+
+        }
     }
 }
 
@@ -161,6 +168,10 @@ class Game { // like the brains of the whole thing
 
         this.waves.push(new Wave(this)); 
 
+        this.score = 0; 
+        this.gameOPver= false; 
+
+
         //event listeners for key board functions
         window.addEventListener('keydown', e => {
             if (this.keys.indexOf(e.key) === -1) this.keys.push(e.key)//push method add the specified elements to the end of an array and returns the new length of the array.
@@ -177,7 +188,7 @@ class Game { // like the brains of the whole thing
         
     }
     render(context){
-       
+        this.drawStatusText(context)
         this.player.draw(context); 
         this.player.update(); 
         this.projectilesPool.forEach(projectile => {
@@ -210,10 +221,18 @@ class Game { // like the brains of the whole thing
             a.y < b.y + b.height && 
             a.y + a.height > b.y
             )
+        }
+    drawStatusText(context) {
+        context.fillText('Score: ' + this.score, 20, 40); 
+        if (this.gameOPver) {
+            context.textAlign= 'center'; 
+            context.font = '100px Impact'; 
+            context.fillText("GAME OVER!", this.width * 0.5, this.height * 0.5); 
+        }
 
+    }
         
     }
-}
 // This line makes sure we're ready to start drawing when everything on the page is ready.
 window.addEventListener('load', function(){
     // This line gets a special paper from our webpage called a canvas.
@@ -232,7 +251,7 @@ window.addEventListener('load', function(){
     ctx.fillStyle = 'white'; 
     ctx.strokeStyle = 'white'; 
     ctx.lineWidth = 5;
-
+    ctx.font= '30px Impact'; 
     const game = new Game(canvas); // Create a new game using a canvas
     // game.createProjectiles(); //CHATGPT!!!!!!!!!!!!!!!!!!!!
 
