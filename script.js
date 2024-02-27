@@ -29,6 +29,15 @@ class Player {
 
 
     }
+
+    restart() {
+        this.x = this.game.width * 0.5 - this.width * 0.5;
+        this.y = this.game.height - this.height; 
+        this.lives = 3; 
+         
+        
+    }
+
 }
 
 class Projectile {
@@ -167,9 +176,9 @@ class Game { // like the brains of the whole thing
         this.projectilesPool = [];  
         this.numberOfProjectiles = 10; 
         this.createProjectiles(); 
-
-        this.columns = 5; 
-        this.rows = 5; 
+        this.fired = false; //flags the keydown for projectile so that it stops from constant firing.
+        this.columns = 2; 
+        this.rows = 2; 
         this.enemySize = 60;
 
         this.waves = []; 
@@ -183,11 +192,14 @@ class Game { // like the brains of the whole thing
 
         //event listeners for key board functions
         window.addEventListener('keydown', e => {
+            if (e.key === '1' && !this.fired) this.player.shoot(); 
+            this.fired = true;
             if (this.keys.indexOf(e.key) === -1) this.keys.push(e.key)//push method add the specified elements to the end of an array and returns the new length of the array.
-            if (e.key === '1') this.player.shoot(); 
            
+            if (e.key === 'r' && this.gameOver) this.restart(); 
         })
         window.addEventListener('keyup', e => {
+            this.fired = false; 
             const index = this.keys.indexOf(e.key);
             if (index > -1) {
                 this.keys.splice(index, 1);
@@ -266,10 +278,23 @@ class Game { // like the brains of the whole thing
      
     }
     this.waves.push(new Wave(this));
+}
+    restart(){
+        this.player.restart(); 
+        this.columns = 2; 
+        this.rows = 2; 
+        this.waves = []; 
+        this.waves.push(new Wave(this)); 
+        this.waveCount = 1; 
+
+        this.score = 0; 
+        this.gameOver = false; 
+
+    }
     
 }
 
-}
+
 // This line makes sure we're ready to start drawing when everything on the page is ready.
 window.addEventListener('load', function(){
     // This line gets a special paper from our webpage called a canvas.
