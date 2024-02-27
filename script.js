@@ -7,6 +7,7 @@ class Player {
         this.x = this.game.width * 0.5; 
         this.y = this.game.height- this.height; 
         this.speed = 5; 
+        this.lives = 3; 
     }
     draw(context){
         context.fillRect(this.x, this.y, this.width, this.height); 
@@ -89,12 +90,18 @@ class Enemy {
            if ( !projectile.free && this.game.checkCollision(this,projectile)) {
                 this.markedForDeletion = true;
                 projectile.reset(); 
-                this.game.score++;
-              
-
+                if (!this.game.gameOver) this.game.score++;
            }
 
+           
         })
+        if (this.game.checkCollision(this, this.game.player)){
+            this.markedForDeletion = true; 
+            if (!this.game.gameOver && this.game.score > 0) this.game.score--;
+            this.game.player.lives--; 
+            if (this.game.player.lives < 1) this.game.gameOver= true; 
+        }
+       
         if (this.y +this.height > this.game.height){
             this.game.gameOver = true;
             this.markedForDeletion = true;
@@ -161,8 +168,8 @@ class Game { // like the brains of the whole thing
         this.numberOfProjectiles = 10; 
         this.createProjectiles(); 
 
-        this.columns = 2; 
-        this.rows = 2; 
+        this.columns = 5; 
+        this.rows = 5; 
         this.enemySize = 60;
 
         this.waves = []; 
@@ -196,16 +203,18 @@ class Game { // like the brains of the whole thing
         this.projectilesPool.forEach(projectile => {
             projectile.update(); 
             projectile.draw(context); 
-        })
+        });
         this.waves.forEach(wave => {
             wave.render(context);
-            if (wave.enemies.length < 1 && !wave.nextWaveTrigger && !this.gameOver)
+            if (wave.enemies.length < 1 && !wave.nextWaveTrigger && !this.gameOver) {
                 this.newWave(); 
-            wave.nextWaveTrigger = true;
-
-        })
+                this.waveCount++; 
+                wave.nextWaveTrigger = true;
+                this.player.lives++;
+            }
+        });
     }
-
+    
     createProjectiles(){
             for (let i = 0; i < this.numberOfProjectiles; i++){
                 this.projectilesPool.push(new Projectile()); // this is like putting the new bullet we made into our box of bullets
@@ -234,6 +243,11 @@ class Game { // like the brains of the whole thing
         context.shadowColor = 'black'; 
         context.fillText('Score: ' + this.score, 20, 40); 
         context.fillText('Wave: ' + this.waveCount, 20, 80); 
+        for (let i = 0; i < this.player.lives; i++) {
+            context.fillRect(20 + 10 * i,100,5,20); 
+        }
+
+
         if (this.gameOver) {
             context.textAlign= 'center'; 
             context.font = '100px Impact'; 
@@ -243,13 +257,16 @@ class Game { // like the brains of the whole thing
     }
     
     newWave(){
+        if (Math.random()< 0.5 && this.columns * this.enemySize < this.width * 0.8 ){
         this.columns++; 
+         } else if (this.rows * this.enemySize< this.height * 0.6){
         this.rows++; 
-        this.waves.push(new Wave(this)); 
-
-
+     
     }
-        
+    this.waves.push(new Wave(this));
+    
+}
+
 }
 // This line makes sure we're ready to start drawing when everything on the page is ready.
 window.addEventListener('load', function(){
