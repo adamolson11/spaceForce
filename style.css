@@ -44,3 +44,10 @@
 }
 
 
+#player{
+  display: none; 
+}
+
+#player_jets {
+  display: none;
+}

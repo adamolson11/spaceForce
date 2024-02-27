@@ -1,23 +1,43 @@
 class Player {
     constructor(game){
         this.game= game; 
-        this.width= 100;
-        this.height= 100;
+        this.width= 140;
+        this.height= 120;
         
         this.x = this.game.width * 0.5; 
         this.y = this.game.height- this.height; 
         this.speed = 5; 
         this.lives = 3; 
+        this.maxLives = 10;
+        this.image = document.getElementById('player'); 
+        this.jets_image = document.getElementById('player_jets'); 
+        this.frameX = 0; 
+        this.jetsFrame = 1; 
+
     }
     draw(context){
-        context.fillRect(this.x, this.y, this.width, this.height); 
+        // context.fillRect(this.x, this.y, this.width, this.height); 
+        // sprite frames
+        if (this.game.keys.indexOf('1') > -1){
+            this.frameX = 1;
+        } else {
+            this.frameX = 0; 
+        }
+        context.drawImage(this.jets_image, this.jetsFrame * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height); 
+        context.drawImage(this.image, this.frameX* this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height); 
       
     }
     update(){
         // horizontal movement 
-        if (this.game.keys.indexOf('ArrowLeft') > -1) this.x -= this.speed;
-        if (this.game.keys.indexOf('ArrowRight') > -1) this.x += this.speed;
-
+        if (this.game.keys.indexOf('ArrowLeft') > -1){
+         this.x -= this.speed;
+         this.jetsFrame = 0; 
+        }else  if 
+        (this.game.keys.indexOf('ArrowRight') > -1) {this.x += this.speed;
+            this.jetsFrame = 2; 
+        } else {
+            this.jetsFrame = 1;
+        }
         //horizontal boundaries prevents from going outside of the box
         if (this.x < -this.width * 0.5) this.x = -this.width * 0.5;
         else if (this.x > this.game.width - this.width * 0.5) this.x = this.game.width -this.width *0.5;
@@ -42,8 +62,8 @@ class Player {
 
 class Projectile {
     constructor(){
-        this.width = 4; 
-        this.height = 20; 
+        this.width = 3; 
+        this.height = 40; 
         this.x = 0;  
         this.y = 0; 
         this.speed = 20 
@@ -52,7 +72,10 @@ class Projectile {
     }
     draw(context){
         if (!this.free){
-            context.fillRect(this.x,this.y, this.width, this.height);    
+            context.save(); 
+            context.fillStyle = 'gold'
+            context.fillRect(this.x,this.y, this.width, this.height);  
+            context.restore();   
         }
    
     }
@@ -97,7 +120,7 @@ class Enemy {
         this.y = y + this.positionY; 
         //check for projectiles. 
         this.game.projectilesPool.forEach(projectile => {
-           if ( !projectile.free && this.game.checkCollision(this,projectile)) {
+           if ( !projectile.free && this.game.checkCollision(this,projectile) && this.lives >0) {
                this.hit(1);
                 projectile.reset(); 
                 
@@ -106,7 +129,7 @@ class Enemy {
            
         });
         if (this.lives < 1) {
-            this.frameX++;
+            if (this.game.spriteUpdate) this.frameX++;
                 if (this.frameX > this.maxFrame){
                     this.markedForDeletion = true;
                     if (!this.game.gameOver) this.game.score += this.maxLives;
@@ -114,16 +137,17 @@ class Enemy {
 
 
         }
-        if (this.game.checkCollision(this, this.game.player)){
-            this.markedForDeletion = true; 
-            if (!this.game.gameOver && this.game.score > 0) this.game.score--;
+        if (this.game.checkCollision(this, this.game.player) && this.lives > 0){
+            // this.markedForDeletion = true; 
+            // if (!this.game.gameOver && this.game.score > 0) this.game.score--;
+            this.lives = 0;
             this.game.player.lives--; 
-            if (this.game.player.lives < 1) this.game.gameOver= true; 
+            // if (this.game.player.lives < 1) this.game.gameOver= true; 
         }
-       
-        if (this.y +this.height > this.game.height){
+       //lose condition
+        if (this.y +this.height > this.game.height || this.game.player.lives < 1) {
             this.game.gameOver = true;
-            this.markedForDeletion = true;
+            
 
         }
     }
@@ -203,17 +227,22 @@ class Game { // like the brains of the whole thing
         
 
         this.projectilesPool = [];  
-        this.numberOfProjectiles = 10; 
+        this.numberOfProjectiles = 15; 
         this.createProjectiles(); 
         this.fired = false; //flags the keydown for projectile so that it stops from constant firing.
-        this.columns = 2; 
-        this.rows = 2; 
+        this.columns = 1; 
+        this.rows = 1; 
         this.enemySize = 80;
 
         this.waves = []; 
 
         this.waves.push(new Wave(this)); 
         this.waveCount = 1; 
+
+
+        this.spriteUpdate = false; 
+        this.spriteTimer = 0; 
+        this.spriteInterval = 150;
 
         this.score = 0; 
         this.gameOver = false; 
@@ -237,21 +266,32 @@ class Game { // like the brains of the whole thing
         });
         
     }
-    render(context){
+    render(context, deltaTime){
+        //Sprite timing is here... 
+        if (this.spriteTimer> this.spriteInterval){
+            this.spriteUpdate = true;
+            this.spriteTimer= 0; 
+
+        } else {
+            this.spriteUpdate = false; 
+            this.spriteTimer += deltaTime; 
+        }
+
         this.drawStatusText(context)
-        this.player.draw(context); 
-        this.player.update(); 
         this.projectilesPool.forEach(projectile => {
             projectile.update(); 
             projectile.draw(context); 
         });
+        this.player.draw(context); 
+        this.player.update(); 
+      
         this.waves.forEach(wave => {
             wave.render(context);
             if (wave.enemies.length < 1 && !wave.nextWaveTrigger && !this.gameOver) {
                 this.newWave(); 
                 this.waveCount++; 
                 wave.nextWaveTrigger = true;
-                this.player.lives++;
+               if( this.player.lives< this.player.maxLives) this.player.lives++;
             }
         });
     }
@@ -284,8 +324,15 @@ class Game { // like the brains of the whole thing
         context.shadowColor = 'black'; 
         context.fillText('Score: ' + this.score, 20, 40); 
         context.fillText('Wave: ' + this.waveCount, 20, 80); 
+        
+        for (let i = 0; i < this.player.maxLives; i++) {
+            context.strokeRect(20 + 20 * i,100,5,20); 
+        }
+
+
+
         for (let i = 0; i < this.player.lives; i++) {
-            context.fillRect(20 + 10 * i,100,5,20); 
+            context.fillRect(20 + 20 * i,100,5,20); 
         }
 
 
@@ -341,22 +388,28 @@ window.addEventListener('load', function(){
 
     ctx.fillStyle = 'white'; 
     ctx.strokeStyle = 'white'; 
-    ctx.lineWidth = 5;
+    // ctx.lineWidth = 5;
     ctx.font= '30px Impact'; 
+
     const game = new Game(canvas); // Create a new game using a canvas
-    // game.createProjectiles(); //CHATGPT!!!!!!!!!!!!!!!!!!!!
+
+
+    let lastTime = 0; 
 
 
 
-function animate(){
+function animate(timeStamp){
+    const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp; 
+
     ctx.clearRect(0,0, canvas.width, canvas.height); 
-    game.render(ctx); // Render the game
+    game.render(ctx, deltaTime); // Render the game
     requestAnimationFrame(animate); 
 
 
 
 }
-animate();
+animate(0);
 });
 
 
