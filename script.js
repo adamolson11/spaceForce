@@ -89,7 +89,8 @@ class Enemy {
 
     }
     draw(context){
-        context.strokeRect(this.x, this.y, this.width, this.height); 
+       
+        context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height) 
     }
     update(x,y){
         this.x = x + this.positionX; 
@@ -97,13 +98,22 @@ class Enemy {
         //check for projectiles. 
         this.game.projectilesPool.forEach(projectile => {
            if ( !projectile.free && this.game.checkCollision(this,projectile)) {
-                this.markedForDeletion = true;
+               this.hit(1);
                 projectile.reset(); 
-                if (!this.game.gameOver) this.game.score++;
+                
            }
 
            
-        })
+        });
+        if (this.lives < 1) {
+            this.frameX++;
+                if (this.frameX > this.maxFrame){
+                    this.markedForDeletion = true;
+                    if (!this.game.gameOver) this.game.score += this.maxLives;
+                }
+
+
+        }
         if (this.game.checkCollision(this, this.game.player)){
             this.markedForDeletion = true; 
             if (!this.game.gameOver && this.game.score > 0) this.game.score--;
@@ -117,16 +127,35 @@ class Enemy {
 
         }
     }
+    hit(damage){
+        this.lives -= damage;
+
+    }
 }
+
+class Beetlemorph extends Enemy {
+    constructor(game, positionX, positionY) {
+        super(game, positionX, positionY); 
+        this.image = document.getElementById('beetlemorph')
+        this.frameX = 0; // horizontal exploration around the beetlemorph spreadsheet
+        this.maxFrame = 2;
+        this.frameY = Math.floor(Math.random() * 4); //vertical exploration around the beetlemorph spreadsheet
+        this.lives = 1; //says this lives 1 hit(damage)
+        this.maxLives = this.lives; 
+    }
+
+}
+
+
 
 class Wave {
     constructor(game){
         this.game = game; 
         this.width = this.game.columns * this.game.enemySize; 
         this.height= this.game.rows * this.game.enemySize; 
-        this.x = 0; 
+        this.x = this.game.width * 0.5 - this.width * 0.5; 
         this.y = -this.height;
-        this.speedX = 3; 
+        this.speedX = Math.random() < 0.5 ? -1 : 1; //ternary operator randomizes what direction the wave moves laterally
         this.speedY = 0; 
         this.enemies = []; 
         this.nextWaveTrigger = false;
@@ -154,7 +183,7 @@ class Wave {
                 for (let x = 0; x < this.game.columns; x++) {
                     let enemyX = x * this.game.enemySize; 
                     let enemyY = y * this.game.enemySize; 
-                    this.enemies.push(new Enemy(this.game, enemyX, enemyY))
+                    this.enemies.push(new Beetlemorph(this.game, enemyX, enemyY))
 
                 } 
 
@@ -179,7 +208,7 @@ class Game { // like the brains of the whole thing
         this.fired = false; //flags the keydown for projectile so that it stops from constant firing.
         this.columns = 2; 
         this.rows = 2; 
-        this.enemySize = 60;
+        this.enemySize = 80;
 
         this.waves = []; 
 
