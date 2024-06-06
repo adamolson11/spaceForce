@@ -43,6 +43,10 @@
   display: none; /*this hides the image you are bringing of the beetlemorph*/
 }
 
+#rhinomorph{
+  display: none; /*this hides the image you are bringing of the beetlemorph*/
+}
+
 
 #player{
   display: none; 
