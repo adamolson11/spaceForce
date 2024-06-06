@@ -188,6 +188,38 @@ class Rhinomorph extends Enemy {
 
 }
 
+class Boss {
+    constructor(game){
+        this.game= game; //points to the canvas game duh. .
+        this.width = 200; 
+        this.height = 200; 
+        this.x = this.game.width * 0.5 - this.width * 0.5; 
+        this.y = -this.height; 
+        this.speedX = Math.random() < 0.5 ? -1 : 1; 
+        this.speedY = 0; 
+        this.maxLives = this.lives; 
+        this.markedForDeletion = false; 
+        this.image = document.getElementById('boss'); 
+        this.frameY = Math.floor(Math.random() *4); 
+        this.maxFrame = 11;     
+
+    }
+    draw(context){
+context.drawImage(this.image, 0,0, this.width, this.height, this.x, this.y,this.width, this.height); 
+    }
+    update(){
+        this.speedY = 0; 
+        if (this.y < 0) this.y +=4;
+        if(this.x <0 || this.x > this.game.width - this.width){
+            this.speedX *= -1;
+            this.speedY= this.height * 0.5; 
+        }; 
+        this.x += this.speedX; 
+        this.y += this.speedY; 
+
+
+    }
+}
 
 
 class Wave {
@@ -201,6 +233,7 @@ class Wave {
         this.speedY = 0; 
         this.enemies = []; 
         this.nextWaveTrigger = false;
+        this.markedForDeletion = false; 
         this.create(); 
      }
      render(context) {
@@ -219,6 +252,7 @@ class Wave {
 
             })
             this.enemies = this.enemies.filter(object => !object.markedForDeletion);
+            if (this.enemies.length <=0) this.markedForDeletion = true;
      }
      create(){
             for (let y = 0; y < this.game.rows; y++){
@@ -229,7 +263,7 @@ class Wave {
                         this.enemies.push(new Beetlemorph(this.game, enemyX, enemyY))
 
                     } else{ this.enemies.push(new Rhinomorph(this.game, enemyX, enemyY))
-                        
+
                     }
 
                    
@@ -262,7 +296,7 @@ class Game { // like the brains of the whole thing
 
         this.waves = []; 
 
-        this.waves.push(new Wave(this)); 
+      
         this.waveCount = 1; 
 
 
@@ -273,7 +307,8 @@ class Game { // like the brains of the whole thing
         this.score = 0; 
         this.gameOver = false; 
 
-
+        this.bossArray = []; 
+        this.restart(); 
         //event listeners for key board functions
         window.addEventListener('keydown', e => {
             if (e.key === '1' && !this.fired) this.player.shoot(); 
@@ -308,6 +343,10 @@ class Game { // like the brains of the whole thing
             projectile.update(); 
             projectile.draw(context); 
         });
+        this.bossArray.forEach(boss => {
+            boss.draw(context); 
+            boss.update();
+        })
         this.player.draw(context); 
         this.player.update(); 
       
@@ -377,6 +416,7 @@ class Game { // like the brains of the whole thing
         this.columns++; 
          } else if (this.rows * this.enemySize< this.height * 0.6){
         this.rows++; 
+        this.waves = this.waves.filter(object => !object.markedForDeletion); 
      
     }
     this.waves.push(new Wave(this));
@@ -385,10 +425,13 @@ class Game { // like the brains of the whole thing
         this.player.restart(); 
         this.columns = 2; 
         this.rows = 2; 
-        this.waves = []; 
-        this.waves.push(new Wave(this)); 
+        this.waves = [];
+        this.bossArray = [];  
+        this.bossArray = []; 
+        // this.waves.push(new Wave(this)); 
+        this.bossArray.push(new Boss(this))
         this.waveCount = 1; 
-
+        
         this.score = 0; 
         this.gameOver = false; 
 

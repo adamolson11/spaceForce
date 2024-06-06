@@ -47,6 +47,10 @@
   display: none; /*this hides the image you are bringing of the beetlemorph*/
 }
 
+#boss{
+  display: none; /*this hides the image you are bringing of the beetlemorph*/
+}
+
 
 #player{
   display: none; 
