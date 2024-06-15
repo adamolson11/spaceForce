@@ -1,3 +1,62 @@
+class Laser {
+   constructor(game){
+    this.game = game;
+    this.x= 0;
+    this.y = 0;
+    this.height = this.game.height -50;
+
+   }  
+   render(context){
+    this.x = this.game.player.x + this.game.player.width * 0.5 - this.width * 0.5;
+
+    context.save(); 
+    context.fillStyle = 'gold'; 
+    context.fillRect(this.x, this.y, this.width, this.height); 
+    context.fillStyle = 'white'; 
+    context.fillRect(this.x + this.width * 0.2, this.y, this.width * 0.6, this.height); 
+    context.restore(); 
+
+    this.game.waves.forEach (wave => {
+        wave.enemies.forEach(enemy => {
+            if (this.game.checkCollision(enemy, this)){
+                enemy.hit(this.damage); 
+            }
+        })
+    })
+    this.game.bossArray.forEach(boss => {
+        if (this.game.checkCollision(boss, this)){
+            boss.hit(this.damage); 
+            
+
+        }
+    })
+   }
+
+}
+
+class SmallLaser extends Laser{ 
+  constructor(game){
+    super(game); 
+    this.width = 5; 
+    this.damage = 0.3;
+    
+   }  
+   render(context){
+super.render(context)
+
+}
+}
+
+class BigLaser extends Laser{ 
+    constructor(game){
+      this.game = game;
+      
+  
+     }  
+  
+  }
+  
+
 class Player {
     constructor(game){
         this.game= game; 
@@ -13,6 +72,7 @@ class Player {
         this.jets_image = document.getElementById('player_jets'); 
         this.frameX = 0; 
         this.jetsFrame = 1; 
+        this.SmallLaser = new SmallLaser(this.game); 
 
     }
     draw(context){
@@ -20,7 +80,12 @@ class Player {
         // sprite frames
         if (this.game.keys.indexOf('1') > -1){
             this.frameX = 1;
-        } else {
+
+        } else if (this.game.keys.indexOf('2') > -1){
+            this.frameX = 2; 
+            this.SmallLaser.render(context); 
+        } 
+        else {
             this.frameX = 0; 
         }
         context.drawImage(this.jets_image, this.jetsFrame * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height); 
