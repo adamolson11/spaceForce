@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game - Learn Python</title>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.12.0/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.12.0/brython_stdlib.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .student-name {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .coins {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 215, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .game-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .game-section h2 {
+            margin-bottom: 15px;
+            color: #00ff00;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #00ff00;
+            border-radius: 5px;
+            display: block;
+            margin: 0 auto 15px;
+            background: #1a1a2e;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: #fff;
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .editor-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .editor-section h2 {
+            margin-bottom: 15px;
+            color: #2196F3;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 400px;
+            background: #1a1a2e;
+            color: #00ff00;
+            border: 2px solid #2196F3;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        
+        .code-snippets {
+            display: none;
+            background: #0f0f1e;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .code-snippets.visible {
+            display: block;
+        }
+        
+        .code-snippets pre {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .info-box {
+            background: rgba(33, 150, 243, 0.2);
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .info-box h3 {
+            margin-bottom: 8px;
+            color: #2196F3;
+        }
+        
+        .info-box p {
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            overflow: auto;
+        }
+        
+        .modal.visible {
+            display: block;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            margin: 5% auto;
+            padding: 30px;
+            border: 2px solid #2196F3;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            color: #fff;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+        
+        .close:hover {
+            color: #fff;
+        }
+        
+        .quiz-question {
+            display: none;
+        }
+        
+        .quiz-question.active {
+            display: block;
+        }
+        
+        .quiz-question h3 {
+            margin-bottom: 20px;
+            color: #00ff00;
+        }
+        
+        .quiz-options {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .quiz-options li {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quiz-options li:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .quiz-options li.selected {
+            background: rgba(33, 150, 243, 0.5);
+            border: 2px solid #2196F3;
+        }
+        
+        .quiz-options li.correct {
+            background: rgba(0, 255, 0, 0.3);
+            border: 2px solid #00ff00;
+        }
+        
+        .quiz-options li.incorrect {
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid #ff0000;
+        }
+        
+        .quiz-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .quiz-results {
+            display: none;
+            text-align: center;
+        }
+        
+        .quiz-results.visible {
+            display: block;
+        }
+        
+        .quiz-results h2 {
+            color: #00ff00;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-score {
+            font-size: 3em;
+            color: #ffd700;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body onload="brython({debug: 1, pythonpath: ['.']})">
+    <!-- Header -->
+    <div class="header">
+        <div class="student-info">
+            <span>👤</span>
+            <span class="student-name" id="studentNameDisplay">Student</span>
+        </div>
+        <div class="coins">
+            <span>🪙</span>
+            <span id="coinDisplay">0</span>
+            <span>coins</span>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Game Section -->
+        <div class="game-section">
+            <h2>🐍 Snake Game</h2>
+            <div class="score-display">
+                Score: <span id="scoreDisplay">0</span>
+            </div>
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button id="startBtn" class="btn-primary">Start</button>
+                <button id="pauseBtn" class="btn-secondary">Pause</button>
+                <button id="restartBtn" class="btn-secondary">Restart</button>
+            </div>
+            <div class="controls">
+                <button id="quizBtn" class="btn-warning">Take Quiz (Earn Coins! 🪙)</button>
+            </div>
+            <div class="info-box">
+                <h3>🎮 How to Play</h3>
+                <p>Use arrow keys (↑ ↓ ← →) or WASD to control the snake. Eat the red food to grow and earn points. Don't hit the walls or yourself!</p>
+            </div>
+        </div>
+        
+        <!-- Editor Section -->
+        <div class="editor-section">
+            <h2>💻 Code Editor</h2>
+            <button id="showCodeBtn" class="btn-info" style="margin-bottom: 15px;">Show Code Snippets</button>
+            
+            <div id="codeSnippets" class="code-snippets">
+                <h3>📚 Key Code Concepts</h3>
+                <p><strong>Snake as a list:</strong></p>
+                <pre>self.snake = [[5, 5], [4, 5], [3, 5]]  # Head first!</pre>
+                <p><strong>Moving the snake:</strong></p>
+                <pre>head = self.snake[0][:]
+head[0] += self.direction[0]  # Move in x
+head[1] += self.direction[1]  # Move in y
+self.snake.insert(0, head)     # Add new head</pre>
+                <p><strong>Collision detection:</strong></p>
+                <pre>if head in self.snake:  # Hit itself
+    self.game_over = True</pre>
+            </div>
+            
+            <textarea id="codeEditor" spellcheck="false"># Edit the Snake game code here!
+# This is a simplified version for learning
+
+# To see your changes:
+# 1. Click "Run Edited Code" to save
+# 2. Reload the page to run your changes
+
+# Try modifying these values:
+GRID_SIZE = 20  # Size of each grid cell
+GAME_SPEED = 150  # Lower = faster (milliseconds)
+
+# Challenge: Can you make the snake move faster?
+# Challenge: Can you change the grid size?</textarea>
+            
+            <button id="runCodeBtn" class="btn-primary">Run Edited Code (Save & Reload)</button>
+            
+            <div class="info-box">
+                <h3>✏️ Editor Tips</h3>
+                <p>Modify the code above and click "Run Edited Code". Your changes will be saved to your browser's localStorage. <strong>Reload the page</strong> to see your changes take effect!</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quiz Modal -->
+    <div id="quizModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeQuiz">&times;</span>
+            <h2>🧠 Python & Game Dev Quiz</h2>
+            <p>Answer correctly to earn coins!</p>
+            
+            <div id="quizContainer">
+                <!-- Quiz questions will be inserted here by JavaScript -->
+            </div>
+            
+            <div id="quizResults" class="quiz-results">
+                <h2>Quiz Complete! 🎉</h2>
+                <p class="quiz-score" id="quizScoreDisplay">0/6</p>
+                <p id="coinsEarnedDisplay">You earned 0 coins!</p>
+                <button class="btn-primary" id="retakeQuizBtn">Retake Quiz</button>
+                <button class="btn-secondary" id="closeResultsBtn">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load Python modules -->
+    <script type="text/python" src="quiz_data.py"></script>
+    <script type="text/python" src="snake.py"></script>
+    
+    <!-- JavaScript for non-Brython functionality -->
+    <script>
+        // Load student name and coins from localStorage
+        window.addEventListener('load', function() {
+            const studentName = localStorage.getItem('student_name') || 'Guest';
+            document.getElementById('studentNameDisplay').textContent = studentName;
+            
+            const coins = parseInt(localStorage.getItem('coins')) || 0;
+            document.getElementById('coinDisplay').textContent = coins;
+            
+            // Load custom code if exists
+            const customCode = localStorage.getItem('student_custom_snake');
+            if (customCode) {
+                document.getElementById('codeEditor').value = customCode;
+            }
+        });
+        
+        // Show/hide code snippets
+        document.getElementById('showCodeBtn').addEventListener('click', function() {
+            const snippets = document.getElementById('codeSnippets');
+            snippets.classList.toggle('visible');
+            this.textContent = snippets.classList.contains('visible') ? 
+                'Hide Code Snippets' : 'Show Code Snippets';
+        });
+        
+        // Run edited code
+        document.getElementById('runCodeBtn').addEventListener('click', function() {
+            const code = document.getElementById('codeEditor').value;
+            localStorage.setItem('student_custom_snake', code);
+            alert('Code saved! Please reload the page to see your changes.\n\n(In a production app, this would be sandboxed and run safely.)');
+        });
+        
+        // Quiz functionality
+        let currentQuestion = 0;
+        let score = 0;
+        let quizData = [];
+        let selectedAnswers = [];
+        
+        // Open quiz modal
+        document.getElementById('quizBtn').addEventListener('click', function() {
+            // Get quiz data from Python (via Brython)
+            try {
+                quizData = window.__BRYTHON__.imported['quiz_data'].quiz_questions;
+            } catch(e) {
+                // Fallback quiz data if Brython module not loaded
+                quizData = [
+                    {
+                        question: "What data structure is best for storing the snake's body segments?",
+                        options: ["A string", "A list/array", "A dictionary", "A single variable"],
+                        correct: 1,
+                        explanation: "A list/array is perfect because the snake is made of multiple segments."
+                    },
+                    {
+                        question: "In the Snake game, what happens when the snake eats food?",
+                        options: ["The snake gets shorter", "The game ends", "The snake grows longer", "Nothing happens"],
+                        correct: 2,
+                        explanation: "When the snake eats food, it grows longer."
+                    },
+                    {
+                        question: "What Python data type would you use to store the snake's direction?",
+                        options: ["A boolean", "A list of two numbers [x, y]", "A single number", "A string"],
+                        correct: 1,
+                        explanation: "Direction needs both x and y components."
+                    },
+                    {
+                        question: "What does a game loop do?",
+                        options: ["Runs once and stops", "Repeatedly updates and draws the game", "Saves progress", "Loads images"],
+                        correct: 1,
+                        explanation: "A game loop continuously updates and redraws the game."
+                    },
+                    {
+                        question: "How do you check if the snake hits the wall?",
+                        options: ["Ask the player", "Compare position with boundaries", "Wait for error", "Use random numbers"],
+                        correct: 1,
+                        explanation: "We compare coordinates with game boundaries."
+                    },
+                    {
+                        question: "What is a 'collision' in game programming?",
+                        options: ["Computer crash", "Two objects touch or overlap", "Mouse click", "Game loads"],
+                        correct: 1,
+                        explanation: "Collision detection checks if objects are touching."
+                    }
+                ];
+            }
+            
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswers = new Array(quizData.length).fill(null);
+            renderQuiz();
+            document.getElementById('quizModal').classList.add('visible');
+        });
+        
+        // Close quiz modal
+        document.getElementById('closeQuiz').addEventListener('click', function() {
+            document.getElementById('quizModal').classList.remove('visible');
+        });
+        
+        document.getElementById('closeResultsBtn').addEventListener('click', function() {
+            document.getElementById('quizModal').classList.remove('visible');
+        });
+        
+        // Retake quiz
+        document.getElementById('retakeQuizBtn').addEventListener('click', function() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswers = new Array(quizData.length).fill(null);
+            document.getElementById('quizResults').classList.remove('visible');
+            renderQuiz();
+        });
+        
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            
+            const question = quizData[currentQuestion];
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'quiz-question active';
+            
+            const questionTitle = document.createElement('h3');
+            questionTitle.textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
+            questionDiv.appendChild(questionTitle);
+            
+            const questionText = document.createElement('p');
+            questionText.textContent = question.question;
+            questionText.style.fontSize = '1.1em';
+            questionText.style.marginBottom = '20px';
+            questionDiv.appendChild(questionText);
+            
+            const optionsList = document.createElement('ul');
+            optionsList.className = 'quiz-options';
+            
+            question.options.forEach((option, index) => {
+                const li = document.createElement('li');
+                li.textContent = option;
+                li.dataset.index = index;
+                
+                if (selectedAnswers[currentQuestion] === index) {
+                    li.classList.add('selected');
+                }
+                
+                li.addEventListener('click', function() {
+                    // Remove previous selection
+                    optionsList.querySelectorAll('li').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    // Add new selection
+                    li.classList.add('selected');
+                    selectedAnswers[currentQuestion] = index;
+                });
+                
+                optionsList.appendChild(li);
+            });
+            
+            questionDiv.appendChild(optionsList);
+            
+            // Navigation buttons
+            const navDiv = document.createElement('div');
+            navDiv.className = 'quiz-navigation';
+            
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Previous';
+            prevBtn.className = 'btn-secondary';
+            prevBtn.disabled = currentQuestion === 0;
+            prevBtn.addEventListener('click', function() {
+                if (currentQuestion > 0) {
+                    currentQuestion--;
+                    renderQuiz();
+                }
+            });
+            
+            const nextBtn = document.createElement('button');
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.textContent = 'Submit Quiz';
+                nextBtn.className = 'btn-primary';
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.className = 'btn-primary';
+            }
+            
+            nextBtn.addEventListener('click', function() {
+                if (selectedAnswers[currentQuestion] === null) {
+                    alert('Please select an answer!');
+                    return;
+                }
+                
+                if (currentQuestion < quizData.length - 1) {
+                    currentQuestion++;
+                    renderQuiz();
+                } else {
+                    submitQuiz();
+                }
+            });
+            
+            navDiv.appendChild(prevBtn);
+            navDiv.appendChild(nextBtn);
+            questionDiv.appendChild(navDiv);
+            
+            container.appendChild(questionDiv);
+        }
+        
+        function submitQuiz() {
+            // Calculate score
+            score = 0;
+            selectedAnswers.forEach((answer, index) => {
+                if (answer === quizData[index].correct) {
+                    score++;
+                }
+            });
+            
+            // Update coins (10 coins per correct answer)
+            const coinsEarned = score * 10;
+            const currentCoins = parseInt(localStorage.getItem('coins')) || 0;
+            const newCoins = currentCoins + coinsEarned;
+            localStorage.setItem('coins', newCoins);
+            document.getElementById('coinDisplay').textContent = newCoins;
+            
+            // Show results
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('quizResults').classList.add('visible');
+            document.getElementById('quizScoreDisplay').textContent = `${score}/${quizData.length}`;
+            document.getElementById('coinsEarnedDisplay').textContent = `You earned ${coinsEarned} coins! 🪙`;
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('quizModal');
+            if (event.target === modal) {
+                modal.classList.remove('visible');
+            }
+        });
+    </script>
+</body>
+</html>

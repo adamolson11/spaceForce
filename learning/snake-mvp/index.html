@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake MVP - Sign In</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .emoji {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-signin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-signin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-guest {
+            background: #f0f0f0;
+            color: #555;
+        }
+        
+        .btn-guest:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+        
+        .info-box {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .info-box p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .emoji {
+            animation: bounce 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <span class="emoji">🐍</span>
+        <h1>Snake Game MVP</h1>
+        <p class="subtitle">Learn Python by Building Games!</p>
+        
+        <form id="signInForm">
+            <div class="form-group">
+                <label for="studentName">What's your name?</label>
+                <input 
+                    type="text" 
+                    id="studentName" 
+                    name="studentName" 
+                    placeholder="Enter your name..." 
+                    autocomplete="name"
+                >
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn-signin">
+                    <span>🎓</span>
+                    <span>Sign In</span>
+                </button>
+                <button type="button" class="btn-guest" id="guestBtn">
+                    <span>👤</span>
+                    <span>Guest</span>
+                </button>
+            </div>
+        </form>
+        
+        <div class="info-box">
+            <h3>🎮 What You'll Learn</h3>
+            <p>Build your own Snake game using Python! Complete quizzes to earn coins, edit code in real-time, and see your changes come to life.</p>
+        </div>
+    </div>
+
+    <script>
+        // Handle sign in form submission
+        document.getElementById('signInForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const studentName = document.getElementById('studentName').value.trim();
+            
+            if (studentName === '') {
+                alert('Please enter your name!');
+                return;
+            }
+            
+            // Store student name in localStorage
+            localStorage.setItem('student_name', studentName);
+            
+            // Navigate to the snake game page
+            window.location.href = 'snake.html';
+        });
+        
+        // Handle guest button click
+        document.getElementById('guestBtn').addEventListener('click', function() {
+            // Store guest as the student name
+            localStorage.setItem('student_name', 'Guest');
+            
+            // Navigate to the snake game page
+            window.location.href = 'snake.html';
+        });
+        
+        // Check if user is already signed in
+        window.addEventListener('load', function() {
+            const studentName = localStorage.getItem('student_name');
+            if (studentName) {
+                document.getElementById('studentName').value = studentName;
+            }
+        });
+    </script>
+</body>
+</html>
