@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "question": "What does OOP stand for in programming?",
+    "choices": [
+      "Object-Oriented Programming",
+      "Only One Problem",
+      "Optionally Optimize Performance",
+      "Open Online Platform"
+    ],
+    "correct": 0,
+    "explanation": "OOP stands for Object-Oriented Programming, a programming paradigm based on objects and classes."
+  },
+  {
+    "id": 2,
+    "question": "In Python, which keyword is used to define a function?",
+    "choices": [
+      "function",
+      "def",
+      "func",
+      "define"
+    ],
+    "correct": 1,
+    "explanation": "The 'def' keyword is used to define a function in Python."
+  },
+  {
+    "id": 3,
+    "question": "What is the name of the Python library used for game development in this Snake game?",
+    "choices": [
+      "Unity",
+      "Pygame",
+      "GameMaker",
+      "Phaser"
+    ],
+    "correct": 1,
+    "explanation": "Pygame is a popular Python library for creating 2D games."
+  },
+  {
+    "id": 4,
+    "question": "What data structure is best for representing the snake's body?",
+    "choices": [
+      "Dictionary",
+      "Set",
+      "List",
+      "Tuple"
+    ],
+    "correct": 2,
+    "explanation": "A list is ideal for the snake's body because we can easily add/remove segments and maintain order."
+  },
+  {
+    "id": 5,
+    "question": "What does FPS stand for in game development?",
+    "choices": [
+      "Fast Player Speed",
+      "Frames Per Second",
+      "Function Processing System",
+      "Fixed Position State"
+    ],
+    "correct": 1,
+    "explanation": "FPS stands for Frames Per Second, which measures how many frames are rendered per second."
+  },
+  {
+    "id": 6,
+    "question": "In game development, what is a 'collision'?",
+    "choices": [
+      "When two objects overlap in the game world",
+      "A bug in the code",
+      "When the game crashes",
+      "A sound effect"
+    ],
+    "correct": 0,
+    "explanation": "Collision refers to when two objects in the game world overlap or touch each other."
+  },
+  {
+    "id": 7,
+    "question": "What is a variable in programming?",
+    "choices": [
+      "A fixed number",
+      "A container for storing data",
+      "A type of loop",
+      "A game character"
+    ],
+    "correct": 1,
+    "explanation": "A variable is a named container that stores data which can change during program execution."
+  },
+  {
+    "id": 8,
+    "question": "Which programming concept allows code to make decisions?",
+    "choices": [
+      "Variables",
+      "Functions",
+      "Conditionals (if/else)",
+      "Comments"
+    ],
+    "correct": 2,
+    "explanation": "Conditionals (if/else statements) allow programs to make decisions and execute different code based on conditions."
+  }
+]
