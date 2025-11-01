@@ -180,12 +180,45 @@
         <div class="info-box">
             <h3>🎮 What You'll Learn</h3>
             <p>Build your own Snake game using Python! Complete quizzes to earn coins, edit code in real-time, and see your changes come to life.</p>
+    <title>Snake Learning MVP - Sign In</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="signin-container">
+        <div class="signin-box">
+            <h1>🐍 Snake Learning</h1>
+            <p>Learn Python by building a Snake game!</p>
+            
+            <form id="signinForm">
+                <div class="form-group">
+                    <label for="studentName">Enter Your Name:</label>
+                    <input 
+                        type="text" 
+                        id="studentName" 
+                        name="studentName" 
+                        placeholder="Your name here..." 
+                        required 
+                        autofocus
+                    >
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Start Learning 🚀</button>
+            </form>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                <p style="font-size: 0.9em; color: #666;">
+                    <strong>Teachers:</strong> 
+                    <a href="teacher-dashboard.html" style="color: #667eea; text-decoration: none;">View Dashboard</a>
+                </p>
+            </div>
         </div>
     </div>
 
     <script>
         // Handle sign in form submission
         document.getElementById('signInForm').addEventListener('submit', function(e) {
+        // Handle sign-in form submission
+        document.getElementById('signinForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const studentName = document.getElementById('studentName').value.trim();
@@ -216,6 +249,33 @@
             const studentName = localStorage.getItem('student_name');
             if (studentName) {
                 document.getElementById('studentName').value = studentName;
+            if (studentName) {
+                // Store student name in localStorage
+                localStorage.setItem('student_name', studentName);
+                
+                // Initialize coins if not exists
+                if (!localStorage.getItem('coins')) {
+                    localStorage.setItem('coins', '0');
+                }
+                
+                // Initialize quiz scores if not exists
+                if (!localStorage.getItem('quiz_scores')) {
+                    localStorage.setItem('quiz_scores', JSON.stringify([]));
+                }
+                
+                // Redirect to snake game page
+                window.location.href = 'snake.html';
+            }
+        });
+        
+        // Check if already signed in
+        window.addEventListener('load', function() {
+            const studentName = localStorage.getItem('student_name');
+            if (studentName) {
+                // Show returning user message
+                const nameInput = document.getElementById('studentName');
+                nameInput.value = studentName;
+                nameInput.placeholder = `Welcome back, ${studentName}!`;
             }
         });
     </script>
