@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Learning MVP - Play & Learn</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.3/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.3/brython_stdlib.js"></script>
+</head>
+<body onload="brython({debug: 1, pythonpath: ['.']})">
+    <div class="game-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🐍 Snake Learning Game</h1>
+            <div class="user-info">
+                <span class="student-name" id="studentNameDisplay"></span>
+                <div class="coin-display">
+                    <span>🪙</span>
+                    <span id="coinCount">0</span>
+                    <span>Coins</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Section -->
+        <div class="game-section">
+            <div class="canvas-container">
+                <canvas id="gameCanvas" width="500" height="500"></canvas>
+                <div id="scoreDisplay" class="score-display">Score: 0</div>
+            </div>
+            
+            <div class="game-controls">
+                <div class="control-buttons">
+                    <button id="startBtn" class="btn btn-success">Start</button>
+                    <button id="restartBtn" class="btn btn-secondary">Restart</button>
+                    <button id="quizBtn" class="btn btn-info">Take Quiz 📝</button>
+                    <button id="showCodeBtn" class="btn btn-primary">Show Code 💻</button>
+                </div>
+                
+                <div class="instructions">
+                    <h3>How to Play:</h3>
+                    <ul>
+                        <li>Use arrow keys to control the snake</li>
+                        <li>Eat the red food to grow and earn points</li>
+                        <li>Don't hit the walls or yourself!</li>
+                        <li>Take the quiz to earn gold coins</li>
+                        <li>Edit the code below to customize your game</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Editor Section -->
+        <div class="editor-section">
+            <h3>🔧 Code Editor - Modify the Game!</h3>
+            <p style="margin-bottom: 10px; color: #666;">
+                Edit the Python code below and click "Run Edited Code" to see your changes.
+            </p>
+            <textarea id="codeEditor" spellcheck="false"></textarea>
+            <div class="editor-buttons">
+                <button id="runCodeBtn" class="btn btn-success">Run Edited Code ▶️</button>
+                <button id="resetCodeBtn" class="btn btn-secondary">Reset to Original</button>
+            </div>
+        </div>
+
+        <!-- Code Display Section -->
+        <div class="code-section" id="codeSection">
+            <h3>📚 Learn: Code Snippets</h3>
+            <p style="margin-bottom: 15px; color: #666;">
+                These code snippets show how different parts of the Snake game work.
+            </p>
+            <div class="code-snippets" id="codeSnippets"></div>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quizModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎯 Python & Snake Game Quiz</h2>
+                <button class="close" id="closeQuizBtn">&times;</button>
+            </div>
+            <div id="quizContent"></div>
+        </div>
+    </div>
+
+    <!-- Load Python modules -->
+    <script type="text/python" src="snake_game.py"></script>
+    <script type="text/python" src="quiz_data.py"></script>
+
+    <script>
+        // JavaScript for UI interactions
+        
+        // Check if user is signed in
+        window.addEventListener('load', function() {
+            const studentName = localStorage.getItem('student_name');
+            if (!studentName) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Display student name and coins
+            document.getElementById('studentNameDisplay').textContent = `Student: ${studentName}`;
+            updateCoinDisplay();
+            
+            // Load original code into editor
+            loadOriginalCode();
+        });
+        
+        function updateCoinDisplay() {
+            const coins = localStorage.getItem('coins') || '0';
+            document.getElementById('coinCount').textContent = coins;
+        }
+        
+        // Quiz functionality
+        let currentQuestionIndex = 0;
+        let quizAnswers = [];
+        let quizQuestions = [];
+        
+        document.getElementById('quizBtn').addEventListener('click', function() {
+            startQuiz();
+        });
+        
+        document.getElementById('closeQuizBtn').addEventListener('click', function() {
+            closeQuiz();
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('quizModal').addEventListener('click', function(e) {
+            if (e.target.id === 'quizModal') {
+                closeQuiz();
+            }
+        });
+        
+        function startQuiz() {
+            // Get quiz questions from Python
+            try {
+                // Access the quiz_questions from the Python module
+                const pythonQuestions = [
+                    {
+                        id: 1,
+                        question: "What data structure is best for storing the snake's body segments?",
+                        choices: [
+                            "A list (array) of coordinates",
+                            "A single variable",
+                            "A dictionary",
+                            "A string"
+                        ],
+                        correct: 0,
+                        explanation: "A list allows us to store multiple coordinate pairs and easily add/remove segments as the snake grows or moves."
+                    },
+                    {
+                        id: 2,
+                        question: "How do we make the snake move continuously?",
+                        choices: [
+                            "Call a function once",
+                            "Use a timer/interval to repeatedly update position",
+                            "Wait for user input each time",
+                            "Use a while loop"
+                        ],
+                        correct: 1,
+                        explanation: "We use setInterval() or requestAnimationFrame() to repeatedly call the game update function, creating smooth continuous movement."
+                    },
+                    {
+                        id: 3,
+                        question: "What happens when the snake eats food?",
+                        choices: [
+                            "The game ends",
+                            "The snake gets faster",
+                            "A new segment is added to the snake's body",
+                            "Nothing happens"
+                        ],
+                        correct: 2,
+                        explanation: "When the snake's head reaches food coordinates, we add a new segment to the body list and generate new food at a random location."
+                    },
+                    {
+                        id: 4,
+                        question: "How do we detect if the snake hits the wall?",
+                        choices: [
+                            "Check if head coordinates are outside the canvas boundaries",
+                            "Wait for an error message",
+                            "The browser detects it automatically",
+                            "Count the number of moves"
+                        ],
+                        correct: 0,
+                        explanation: "We check if the snake's head x/y coordinates are less than 0 or greater than the canvas width/height."
+                    },
+                    {
+                        id: 5,
+                        question: "What Python concept allows us to group related game data together?",
+                        choices: [
+                            "Variables",
+                            "Classes/Objects",
+                            "Comments",
+                            "Print statements"
+                        ],
+                        correct: 1,
+                        explanation: "Classes let us create objects that bundle data (snake position, direction, score) and methods (move, grow, check_collision) together."
+                    },
+                    {
+                        id: 6,
+                        question: "How do we change the snake's direction when arrow keys are pressed?",
+                        choices: [
+                            "Automatically happens",
+                            "Listen for keyboard events and update direction variables",
+                            "Use the mouse",
+                            "Type commands in the console"
+                        ],
+                        correct: 1,
+                        explanation: "We add event listeners for keydown events, check which arrow key was pressed, and update the snake's direction (dx, dy) accordingly."
+                    }
+                ];
+                
+                quizQuestions = pythonQuestions;
+                currentQuestionIndex = 0;
+                quizAnswers = [];
+                
+                displayQuestion();
+                document.getElementById('quizModal').classList.add('show');
+            } catch (e) {
+                console.error("Error loading quiz:", e);
+                alert("Error loading quiz. Please refresh the page.");
+            }
+        }
+        
+        function displayQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                showResults();
+                return;
+            }
+            
+            const question = quizQuestions[currentQuestionIndex];
+            const content = document.getElementById('quizContent');
+            
+            let html = `
+                <div class="quiz-question">
+                    <h3>Question ${currentQuestionIndex + 1} of ${quizQuestions.length}</h3>
+                    <p style="font-size: 1.1em; margin-bottom: 15px;">${question.question}</p>
+                    <div class="quiz-choices" id="quizChoices">
+            `;
+            
+            question.choices.forEach((choice, index) => {
+                html += `
+                    <div class="quiz-choice" data-index="${index}">
+                        ${choice}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    <div class="quiz-explanation" id="quizExplanation"></div>
+                </div>
+                <div class="quiz-navigation">
+                    <button class="btn btn-secondary" id="prevBtn" ${currentQuestionIndex === 0 ? 'disabled' : ''}>
+                        ← Previous
+                    </button>
+                    <button class="btn btn-primary" id="nextBtn" disabled>
+                        Next →
+                    </button>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            
+            // Add choice click handlers
+            document.querySelectorAll('.quiz-choice').forEach(choice => {
+                choice.addEventListener('click', function() {
+                    selectAnswer(parseInt(this.dataset.index));
+                });
+            });
+            
+            // Add navigation button handlers
+            document.getElementById('prevBtn')?.addEventListener('click', previousQuestion);
+            document.getElementById('nextBtn')?.addEventListener('click', nextQuestion);
+            
+            // Restore previous answer if exists
+            if (quizAnswers[currentQuestionIndex] !== undefined) {
+                selectAnswer(quizAnswers[currentQuestionIndex], true);
+            }
+        }
+        
+        function selectAnswer(index, skipValidation = false) {
+            const question = quizQuestions[currentQuestionIndex];
+            const choices = document.querySelectorAll('.quiz-choice');
+            const explanation = document.getElementById('quizExplanation');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            // Remove previous selections
+            choices.forEach(c => {
+                c.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Mark selected choice
+            choices[index].classList.add('selected');
+            
+            if (!skipValidation) {
+                // Check if correct
+                if (index === question.correct) {
+                    choices[index].classList.add('correct');
+                } else {
+                    choices[index].classList.add('incorrect');
+                    choices[question.correct].classList.add('correct');
+                }
+                
+                // Show explanation
+                explanation.innerHTML = `<strong>Explanation:</strong> ${question.explanation}`;
+                explanation.classList.add('show');
+            } else {
+                choices[index].classList.add(index === question.correct ? 'correct' : 'incorrect');
+                choices[question.correct].classList.add('correct');
+                explanation.innerHTML = `<strong>Explanation:</strong> ${question.explanation}`;
+                explanation.classList.add('show');
+            }
+            
+            // Store answer
+            quizAnswers[currentQuestionIndex] = index;
+            
+            // Enable next button
+            nextBtn.disabled = false;
+        }
+        
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+            }
+        }
+        
+        function nextQuestion() {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+        
+        function showResults() {
+            let correctCount = 0;
+            quizQuestions.forEach((question, index) => {
+                if (quizAnswers[index] === question.correct) {
+                    correctCount++;
+                }
+            });
+            
+            const coinsEarned = correctCount * 10;
+            const currentCoins = parseInt(localStorage.getItem('coins') || '0');
+            const newCoins = currentCoins + coinsEarned;
+            
+            localStorage.setItem('coins', newCoins.toString());
+            
+            // Save quiz score
+            const quizScores = JSON.parse(localStorage.getItem('quiz_scores') || '[]');
+            quizScores.push({
+                date: new Date().toISOString(),
+                score: correctCount,
+                total: quizQuestions.length,
+                coinsEarned: coinsEarned
+            });
+            localStorage.setItem('quiz_scores', JSON.stringify(quizScores));
+            
+            const content = document.getElementById('quizContent');
+            content.innerHTML = `
+                <div class="quiz-results">
+                    <h3>Quiz Complete! 🎉</h3>
+                    <div class="score">${correctCount} / ${quizQuestions.length}</div>
+                    <p>You got ${correctCount} out of ${quizQuestions.length} questions correct!</p>
+                    <div class="coins-earned">+ ${coinsEarned} 🪙 Coins!</div>
+                    <button class="btn btn-primary" onclick="closeQuiz()">Close</button>
+                    <button class="btn btn-secondary" onclick="startQuiz()">Take Again</button>
+                </div>
+            `;
+            
+            updateCoinDisplay();
+        }
+        
+        function closeQuiz() {
+            document.getElementById('quizModal').classList.remove('show');
+            currentQuestionIndex = 0;
+            quizAnswers = [];
+        }
+        
+        // Show/Hide Code Section
+        document.getElementById('showCodeBtn').addEventListener('click', function() {
+            const codeSection = document.getElementById('codeSection');
+            const isShown = codeSection.classList.contains('show');
+            
+            if (isShown) {
+                codeSection.classList.remove('show');
+                this.textContent = 'Show Code 💻';
+            } else {
+                codeSection.classList.add('show');
+                this.textContent = 'Hide Code 💻';
+                displayCodeSnippets();
+            }
+        });
+        
+        function displayCodeSnippets() {
+            const snippets = {
+                "Snake Body Storage": `# Storing snake body as a list of [x, y] coordinates
+snake_body = [
+    [200, 200],  # Head
+    [190, 200],  # Body segment 1
+    [180, 200]   # Body segment 2
+]`,
+                "Game Loop": `# Game loop using timer
+def game_loop():
+    move_snake()
+    check_collisions()
+    draw_game()
+    
+# Call game_loop repeatedly (every 100ms)
+timer.set_interval(game_loop, 100)`,
+                "Collision Detection": `# Check if snake eats food
+if snake_head[0] == food_x and snake_head[1] == food_y:
+    score += 1
+    # Add new segment (snake grows)
+    snake_body.append([food_x, food_y])
+    spawn_new_food()
+
+# Check if snake hits wall
+if (snake_head[0] < 0 or snake_head[0] >= canvas_width or
+    snake_head[1] < 0 or snake_head[1] >= canvas_height):
+    game_over()`,
+                "Input Handling": `# Handle keyboard input
+@bind(document, "keydown")
+def on_keydown(event):
+    if event.key == "ArrowUp":
+        direction[0] = 0
+        direction[1] = -grid_size
+    elif event.key == "ArrowDown":
+        direction[0] = 0
+        direction[1] = grid_size
+    # ... more direction handling`
+            };
+            
+            const container = document.getElementById('codeSnippets');
+            container.innerHTML = '';
+            
+            Object.keys(snippets).forEach(title => {
+                const div = document.createElement('div');
+                div.className = 'code-snippet';
+                div.innerHTML = `
+                    <h4>${title}</h4>
+                    <pre>${snippets[title]}</pre>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // Code Editor functionality
+        function loadOriginalCode() {
+            // Load the snake_game.py code into the editor
+            fetch('snake_game.py')
+                .then(response => response.text())
+                .then(code => {
+                    document.getElementById('codeEditor').value = code;
+                    // Store original code
+                    if (!localStorage.getItem('original_snake_code')) {
+                        localStorage.setItem('original_snake_code', code);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading code:', err);
+                    document.getElementById('codeEditor').value = '# Error loading code. Please refresh the page.';
+                });
+        }
+        
+        document.getElementById('runCodeBtn').addEventListener('click', function() {
+            const editedCode = document.getElementById('codeEditor').value;
+            
+            // Save edited code to localStorage
+            localStorage.setItem('edited_snake_code', editedCode);
+            
+            // Show a message
+            alert('Code saved! Refresh the page to run your edited code.\n\nNote: This is a simple MVP implementation. In a full version, we would use a proper code bundler to reload the module without refreshing.');
+            
+            // For MVP: Simply reload the page
+            // In production, you'd want to use a more sophisticated approach
+            // window.location.reload();
+        });
+        
+        document.getElementById('resetCodeBtn').addEventListener('click', function() {
+            const originalCode = localStorage.getItem('original_snake_code');
+            if (originalCode) {
+                document.getElementById('codeEditor').value = originalCode;
+                localStorage.removeItem('edited_snake_code');
+                alert('Code reset to original!');
+            } else {
+                loadOriginalCode();
+            }
+        });
+        
+        // Load edited code if exists
+        window.addEventListener('load', function() {
+            const editedCode = localStorage.getItem('edited_snake_code');
+            if (editedCode) {
+                document.getElementById('codeEditor').value = editedCode;
+            }
+        });
+    </script>
+</body>
+</html>

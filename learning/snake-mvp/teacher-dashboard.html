@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Snake Learning MVP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>👨‍🏫 Teacher Dashboard</h1>
+            <p>Monitor student progress and coin balances (MVP - Reading from localStorage)</p>
+            <div style="margin-top: 10px;">
+                <a href="index.html" class="btn btn-secondary" style="text-decoration: none;">← Back to Sign In</a>
+                <button id="refreshBtn" class="btn btn-primary">🔄 Refresh Data</button>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Total Students</h3>
+                <div class="value" id="totalStudents">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Coins Earned</h3>
+                <div class="value" id="totalCoins">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Quizzes Taken</h3>
+                <div class="value" id="totalQuizzes">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Average Score</h3>
+                <div class="value" id="avgScore">-</div>
+            </div>
+        </div>
+
+        <!-- Student List -->
+        <div class="student-list">
+            <h2>Student Progress</h2>
+            <div id="studentData"></div>
+        </div>
+
+        <!-- Extension Info -->
+        <div style="margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 10px; border-left: 4px solid #667eea;">
+            <h3 style="color: #333; margin-bottom: 10px;">💡 Extension Notes</h3>
+            <p style="color: #666; margin-bottom: 10px;">
+                <strong>Current Implementation:</strong> This dashboard reads student data from browser localStorage. 
+                Each student's data is stored only in their own browser.
+            </p>
+            <p style="color: #666; margin-bottom: 10px;">
+                <strong>To Extend to Multi-Student Dashboard:</strong>
+            </p>
+            <ul style="color: #666; margin-left: 20px;">
+                <li>Add a backend API (see api/README.md for guidance)</li>
+                <li>Store student progress in a database (PostgreSQL, MongoDB, etc.)</li>
+                <li>Add authentication for teachers and students</li>
+                <li>Create API endpoints to fetch all students' progress</li>
+                <li>Add real-time updates with WebSockets</li>
+                <li>Add filtering, sorting, and export capabilities</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Load and display student data from localStorage
+        function loadDashboardData() {
+            const studentName = localStorage.getItem('student_name');
+            const coins = parseInt(localStorage.getItem('coins') || '0');
+            const quizScores = JSON.parse(localStorage.getItem('quiz_scores') || '[]');
+            
+            // Calculate stats
+            const totalStudents = studentName ? 1 : 0;
+            const totalCoins = coins;
+            const totalQuizzes = quizScores.length;
+            
+            let avgScore = '-';
+            if (quizScores.length > 0) {
+                const totalScore = quizScores.reduce((sum, quiz) => {
+                    return sum + (quiz.score / quiz.total * 100);
+                }, 0);
+                avgScore = Math.round(totalScore / quizScores.length) + '%';
+            }
+            
+            // Update stats
+            document.getElementById('totalStudents').textContent = totalStudents;
+            document.getElementById('totalCoins').textContent = totalCoins;
+            document.getElementById('totalQuizzes').textContent = totalQuizzes;
+            document.getElementById('avgScore').textContent = avgScore;
+            
+            // Display student data
+            const studentDataContainer = document.getElementById('studentData');
+            
+            if (!studentName) {
+                studentDataContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>No student data found in this browser.</p>
+                        <p style="font-size: 0.9em; color: #999;">
+                            Sign in as a student and take the quiz to see data here.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Build student table
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Total Coins</th>
+                            <th>Quizzes Taken</th>
+                            <th>Latest Score</th>
+                            <th>Last Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            const latestQuiz = quizScores.length > 0 ? quizScores[quizScores.length - 1] : null;
+            const latestScore = latestQuiz ? 
+                `${latestQuiz.score}/${latestQuiz.total} (${Math.round(latestQuiz.score / latestQuiz.total * 100)}%)` : 
+                'N/A';
+            const lastActivity = latestQuiz ? 
+                new Date(latestQuiz.date).toLocaleString() : 
+                'N/A';
+            
+            tableHTML += `
+                        <tr>
+                            <td><strong>${studentName}</strong></td>
+                            <td>🪙 ${coins}</td>
+                            <td>${totalQuizzes}</td>
+                            <td>${latestScore}</td>
+                            <td>${lastActivity}</td>
+                        </tr>
+            `;
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            // Add quiz history
+            if (quizScores.length > 0) {
+                tableHTML += `
+                    <div style="margin-top: 20px;">
+                        <h3 style="color: #333; margin-bottom: 15px;">Quiz History for ${studentName}</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Score</th>
+                                    <th>Percentage</th>
+                                    <th>Coins Earned</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                quizScores.forEach(quiz => {
+                    const percentage = Math.round(quiz.score / quiz.total * 100);
+                    tableHTML += `
+                        <tr>
+                            <td>${new Date(quiz.date).toLocaleString()}</td>
+                            <td>${quiz.score}/${quiz.total}</td>
+                            <td>${percentage}%</td>
+                            <td>🪙 ${quiz.coinsEarned}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            studentDataContainer.innerHTML = tableHTML;
+        }
+        
+        // Refresh button handler
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            loadDashboardData();
+            
+            // Show feedback
+            const btn = this;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Refreshed!';
+            btn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 1500);
+        });
+        
+        // Load data on page load
+        window.addEventListener('load', function() {
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
