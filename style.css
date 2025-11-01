@@ -4,12 +4,272 @@ body, html {
   padding: 0;
   height: 100%;
   width: 100%;
-  background-image: url("PlayPageBackground.png"); /* Background for the whole page */
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Animated Space Background */
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+  z-index: -1;
+  overflow: hidden;
+}
+
+/* Stars layers for parallax effect */
+.stars, .stars2, .stars3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.stars {
+  background: radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+              radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+              radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+              radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+              radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+              radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  animation: moveStars 100s linear infinite;
+}
+
+.stars2 {
+  background: radial-gradient(1px 1px at 30px 50px, #eee, rgba(0,0,0,0)),
+              radial-gradient(1px 1px at 60px 90px, #fff, rgba(0,0,0,0)),
+              radial-gradient(1px 1px at 110px 30px, #fff, rgba(0,0,0,0)),
+              radial-gradient(1px 1px at 150px 70px, #ddd, rgba(0,0,0,0)),
+              radial-gradient(1px 1px at 190px 110px, #fff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 250px 250px;
+  animation: moveStars 150s linear infinite;
+}
+
+.stars3 {
+  background: radial-gradient(3px 3px at 70px 80px, #fff, rgba(0,0,0,0)),
+              radial-gradient(3px 3px at 120px 40px, #ddd, rgba(0,0,0,0)),
+              radial-gradient(3px 3px at 170px 130px, #fff, rgba(0,0,0,0));
+  background-repeat: repeat;
+  background-size: 300px 300px;
+  animation: moveStars 200s linear infinite;
+}
+
+/* Shooting stars effect */
+.shooting-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.shooting-stars::before,
+.shooting-stars::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+  animation: shootingStar 3s ease-in-out infinite;
+}
+
+.shooting-stars::before {
+  top: 20%;
+  left: 80%;
+  animation-delay: 0s;
+}
+
+.shooting-stars::after {
+  top: 60%;
+  left: 10%;
+  animation-delay: 1.5s;
+}
+
+@keyframes moveStars {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-200px);
+  }
+}
+
+@keyframes shootingStar {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(-300px) translateY(300px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-300px) translateY(300px);
+    opacity: 0;
+  }
+}
+
+/* Hero Section Styles */
+.hero {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-content {
+  margin-bottom: 20px;
+  animation: fadeInUp 1s ease-out;
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+               0 0 40px rgba(0, 150, 255, 0.6),
+               0 4px 8px rgba(0, 0, 0, 0.8);
+  margin-bottom: 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.hero-subtitle {
+  font-size: 1.8rem;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8),
+               0 2px 4px rgba(0, 0, 0, 0.8);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  color: #e0e0e0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  margin-bottom: 2rem;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-hero {
+  font-size: 1.3rem;
+  padding: 15px 40px;
+  border-radius: 50px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-hero.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+}
+
+.btn-hero.btn-primary:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.btn-hero.btn-secondary {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-color: #f093fb;
+}
+
+.btn-hero.btn-secondary:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 30px rgba(240, 147, 251, 0.8);
+  }
+}
+
+.pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.3rem;
+  }
+  
+  .hero-description {
+    font-size: 1rem;
+  }
+  
+  .btn-hero {
+    font-size: 1rem;
+    padding: 12px 30px;
+  }
+}
+
+/* Game Canvas Styles */
 #canvas1 {
   border: 5px solid black;
   position: absolute;
@@ -23,10 +283,177 @@ body, html {
   background-size: cover;
 }
 
-.hero-content {
-  margin-bottom: 20px;
-}
-
 #beetlemorph, #rhinomorph, #boss, #player, #player_jets {
   display: none;
+}
+
+/* Game Portal Styles */
+.game-portal {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 60px 20px;
+  overflow-y: auto;
+}
+
+.portal-title {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+               0 0 40px rgba(0, 150, 255, 0.6),
+               0 4px 8px rgba(0, 0, 0, 0.8);
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.portal-subtitle {
+  font-size: 1.3rem;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8),
+               0 2px 4px rgba(0, 0, 0, 0.8);
+  margin-bottom: 2rem;
+}
+
+.btn-back {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 10px 30px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-block;
+  margin-bottom: 2rem;
+  border: 2px solid #667eea;
+}
+
+.btn-back:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  color: white;
+}
+
+/* Game Card Styles */
+.game-card {
+  background: linear-gradient(135deg, rgba(30, 30, 50, 0.9) 0%, rgba(20, 20, 40, 0.95) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.game-card:hover {
+  transform: translateY(-10px);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+}
+
+.game-card-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.game-card-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.game-card-description {
+  font-size: 1rem;
+  color: #ddd;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.game-card-badges {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.game-card-badges .badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-game {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 12px 35px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+  border: 2px solid #f093fb;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-game:hover:not(.coming-soon) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(240, 147, 251, 0.6);
+  color: white;
+}
+
+.btn-game.coming-soon {
+  background: linear-gradient(135deg, #666 0%, #444 100%);
+  border-color: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Responsive Design for Game Portal */
+@media (max-width: 768px) {
+  .portal-title {
+    font-size: 2rem;
+  }
+  
+  .portal-subtitle {
+    font-size: 1rem;
+  }
+  
+  .game-card {
+    padding: 20px;
+  }
+  
+  .game-card-icon {
+    font-size: 3rem;
+  }
+  
+  .game-card-title {
+    font-size: 1.5rem;
+  }
+  
+  .game-card-description {
+    font-size: 0.9rem;
+  }
 }
