@@ -3,501 +3,656 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Learning MVP - Play & Learn</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.3/brython.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.3/brython_stdlib.js"></script>
+    <title>Snake Game - Learn Python</title>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.12.0/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.12.0/brython_stdlib.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .student-name {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .coins {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 215, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .game-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .game-section h2 {
+            margin-bottom: 15px;
+            color: #00ff00;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #00ff00;
+            border-radius: 5px;
+            display: block;
+            margin: 0 auto 15px;
+            background: #1a1a2e;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: #fff;
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        
+        .editor-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .editor-section h2 {
+            margin-bottom: 15px;
+            color: #2196F3;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 400px;
+            background: #1a1a2e;
+            color: #00ff00;
+            border: 2px solid #2196F3;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        
+        .code-snippets {
+            display: none;
+            background: #0f0f1e;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .code-snippets.visible {
+            display: block;
+        }
+        
+        .code-snippets pre {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .info-box {
+            background: rgba(33, 150, 243, 0.2);
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .info-box h3 {
+            margin-bottom: 8px;
+            color: #2196F3;
+        }
+        
+        .info-box p {
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            overflow: auto;
+        }
+        
+        .modal.visible {
+            display: block;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            margin: 5% auto;
+            padding: 30px;
+            border: 2px solid #2196F3;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            color: #fff;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 20px;
+        }
+        
+        .close:hover {
+            color: #fff;
+        }
+        
+        .quiz-question {
+            display: none;
+        }
+        
+        .quiz-question.active {
+            display: block;
+        }
+        
+        .quiz-question h3 {
+            margin-bottom: 20px;
+            color: #00ff00;
+        }
+        
+        .quiz-options {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .quiz-options li {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quiz-options li:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .quiz-options li.selected {
+            background: rgba(33, 150, 243, 0.5);
+            border: 2px solid #2196F3;
+        }
+        
+        .quiz-options li.correct {
+            background: rgba(0, 255, 0, 0.3);
+            border: 2px solid #00ff00;
+        }
+        
+        .quiz-options li.incorrect {
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid #ff0000;
+        }
+        
+        .quiz-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .quiz-results {
+            display: none;
+            text-align: center;
+        }
+        
+        .quiz-results.visible {
+            display: block;
+        }
+        
+        .quiz-results h2 {
+            color: #00ff00;
+            margin-bottom: 20px;
+        }
+        
+        .quiz-score {
+            font-size: 3em;
+            color: #ffd700;
+            margin: 20px 0;
+        }
+        
+        /* Responsive design: Stack layout on tablets and mobile */
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body onload="brython({debug: 1, pythonpath: ['.']})">
-    <div class="game-container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🐍 Snake Learning Game</h1>
-            <div class="user-info">
-                <span class="student-name" id="studentNameDisplay"></span>
-                <div class="coin-display">
-                    <span>🪙</span>
-                    <span id="coinCount">0</span>
-                    <span>Coins</span>
-                </div>
-            </div>
+    <!-- Header -->
+    <div class="header">
+        <div class="student-info">
+            <span>👤</span>
+            <span class="student-name" id="studentNameDisplay">Student</span>
         </div>
-
-        <!-- Game Section -->
-        <div class="game-section">
-            <div class="canvas-container">
-                <canvas id="gameCanvas" width="500" height="500"></canvas>
-                <div id="scoreDisplay" class="score-display">Score: 0</div>
-            </div>
-            
-            <div class="game-controls">
-                <div class="control-buttons">
-                    <button id="startBtn" class="btn btn-success">Start</button>
-                    <button id="restartBtn" class="btn btn-secondary">Restart</button>
-                    <button id="quizBtn" class="btn btn-info">Take Quiz 📝</button>
-                    <button id="showCodeBtn" class="btn btn-primary">Show Code 💻</button>
-                </div>
-                
-                <div class="instructions">
-                    <h3>How to Play:</h3>
-                    <ul>
-                        <li>Use arrow keys to control the snake</li>
-                        <li>Eat the red food to grow and earn points</li>
-                        <li>Don't hit the walls or yourself!</li>
-                        <li>Take the quiz to earn gold coins</li>
-                        <li>Edit the code below to customize your game</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Code Editor Section -->
-        <div class="editor-section">
-            <h3>🔧 Code Editor - Modify the Game!</h3>
-            <p style="margin-bottom: 10px; color: #666;">
-                Edit the Python code below and click "Run Edited Code" to see your changes.
-            </p>
-            <textarea id="codeEditor" spellcheck="false"></textarea>
-            <div class="editor-buttons">
-                <button id="runCodeBtn" class="btn btn-success">Run Edited Code ▶️</button>
-                <button id="resetCodeBtn" class="btn btn-secondary">Reset to Original</button>
-            </div>
-        </div>
-
-        <!-- Code Display Section -->
-        <div class="code-section" id="codeSection">
-            <h3>📚 Learn: Code Snippets</h3>
-            <p style="margin-bottom: 15px; color: #666;">
-                These code snippets show how different parts of the Snake game work.
-            </p>
-            <div class="code-snippets" id="codeSnippets"></div>
+        <div class="coins">
+            <span>🪙</span>
+            <span id="coinDisplay">0</span>
+            <span>coins</span>
         </div>
     </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Game Section -->
+        <div class="game-section">
+            <h2>🐍 Snake Game</h2>
+            <div class="score-display">
+                Score: <span id="scoreDisplay">0</span>
+            </div>
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button id="startBtn" class="btn-primary">Start</button>
+                <button id="pauseBtn" class="btn-secondary">Pause</button>
+                <button id="restartBtn" class="btn-secondary">Restart</button>
+            </div>
+            <div class="controls">
+                <button id="quizBtn" class="btn-warning">Take Quiz (Earn Coins! 🪙)</button>
+            </div>
+            <div class="info-box">
+                <h3>🎮 How to Play</h3>
+                <p>Use arrow keys (↑ ↓ ← →) or WASD to control the snake. Eat the red food to grow and earn points. Don't hit the walls or yourself!</p>
+            </div>
+        </div>
+        
+        <!-- Editor Section -->
+        <div class="editor-section">
+            <h2>💻 Code Editor</h2>
+            <button id="showCodeBtn" class="btn-info" style="margin-bottom: 15px;">Show Code Snippets</button>
+            
+            <div id="codeSnippets" class="code-snippets">
+                <h3>📚 Key Code Concepts</h3>
+                <p><strong>Snake as a list:</strong></p>
+                <pre>self.snake = [[5, 5], [4, 5], [3, 5]]  # Head first!</pre>
+                <p><strong>Moving the snake:</strong></p>
+                <pre>head = self.snake[0][:]
+head[0] += self.direction[0]  # Move in x
+head[1] += self.direction[1]  # Move in y
+self.snake.insert(0, head)     # Add new head</pre>
+                <p><strong>Collision detection:</strong></p>
+                <pre>if head in self.snake:  # Hit itself
+    self.game_over = True</pre>
+            </div>
+            
+            <textarea id="codeEditor" spellcheck="false"># Edit the Snake game code here!
+# This is a simplified version for learning
 
+# To see your changes:
+# 1. Click "Run Edited Code" to save
+# 2. Reload the page to run your changes
+
+# Try modifying these values:
+GRID_SIZE = 20  # Size of each grid cell
+GAME_SPEED = 150  # Lower = faster (milliseconds)
+
+# Challenge: Can you make the snake move faster?
+# Challenge: Can you change the grid size?</textarea>
+            
+            <button id="runCodeBtn" class="btn-primary">Run Edited Code (Save & Reload)</button>
+            
+            <div class="info-box">
+                <h3>✏️ Editor Tips</h3>
+                <p>Modify the code above and click "Run Edited Code". Your changes will be saved to your browser's localStorage. <strong>Reload the page</strong> to see your changes take effect!</p>
+            </div>
+        </div>
+    </div>
+    
     <!-- Quiz Modal -->
     <div id="quizModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>🎯 Python & Snake Game Quiz</h2>
-                <button class="close" id="closeQuizBtn">&times;</button>
+            <span class="close" id="closeQuiz">&times;</span>
+            <h2>🧠 Python & Game Dev Quiz</h2>
+            <p>Answer correctly to earn coins!</p>
+            
+            <div id="quizContainer">
+                <!-- Quiz questions will be inserted here by JavaScript -->
             </div>
-            <div id="quizContent"></div>
+            
+            <div id="quizResults" class="quiz-results">
+                <h2>Quiz Complete! 🎉</h2>
+                <p class="quiz-score" id="quizScoreDisplay">0/6</p>
+                <p id="coinsEarnedDisplay">You earned 0 coins!</p>
+                <button class="btn-primary" id="retakeQuizBtn">Retake Quiz</button>
+                <button class="btn-secondary" id="closeResultsBtn">Close</button>
+            </div>
         </div>
     </div>
-
+    
     <!-- Load Python modules -->
-    <script type="text/python" src="snake_game.py"></script>
     <script type="text/python" src="quiz_data.py"></script>
-
+    <script type="text/python" src="snake.py"></script>
+    
+    <!-- JavaScript for non-Brython functionality -->
     <script>
-        // JavaScript for UI interactions
-        
-        // Check if user is signed in
+        // Load student name and coins from localStorage
         window.addEventListener('load', function() {
-            const studentName = localStorage.getItem('student_name');
-            if (!studentName) {
-                window.location.href = 'index.html';
-                return;
+            const studentName = localStorage.getItem('student_name') || 'Guest';
+            document.getElementById('studentNameDisplay').textContent = studentName;
+            
+            const coins = parseInt(localStorage.getItem('coins')) || 0;
+            document.getElementById('coinDisplay').textContent = coins;
+            
+            // Load custom code if exists
+            const customCode = localStorage.getItem('student_custom_snake');
+            if (customCode) {
+                document.getElementById('codeEditor').value = customCode;
             }
-            
-            // Display student name and coins
-            document.getElementById('studentNameDisplay').textContent = `Student: ${studentName}`;
-            updateCoinDisplay();
-            
-            // Load original code into editor
-            loadOriginalCode();
         });
         
-        function updateCoinDisplay() {
-            const coins = localStorage.getItem('coins') || '0';
-            document.getElementById('coinCount').textContent = coins;
-        }
+        // Show/hide code snippets
+        document.getElementById('showCodeBtn').addEventListener('click', function() {
+            const snippets = document.getElementById('codeSnippets');
+            snippets.classList.toggle('visible');
+            this.textContent = snippets.classList.contains('visible') ? 
+                'Hide Code Snippets' : 'Show Code Snippets';
+        });
+        
+        // Run edited code
+        document.getElementById('runCodeBtn').addEventListener('click', function() {
+            const code = document.getElementById('codeEditor').value;
+            localStorage.setItem('student_custom_snake', code);
+            alert('Code saved! Please reload the page to see your changes.\n\n(In a production app, this would be sandboxed and run safely.)');
+        });
         
         // Quiz functionality
-        let currentQuestionIndex = 0;
-        let quizAnswers = [];
-        let quizQuestions = [];
+        let currentQuestion = 0;
+        let score = 0;
+        let quizData = [];
+        let selectedAnswers = [];
         
+        // Open quiz modal
         document.getElementById('quizBtn').addEventListener('click', function() {
-            startQuiz();
-        });
-        
-        document.getElementById('closeQuizBtn').addEventListener('click', function() {
-            closeQuiz();
-        });
-        
-        // Close modal when clicking outside
-        document.getElementById('quizModal').addEventListener('click', function(e) {
-            if (e.target.id === 'quizModal') {
-                closeQuiz();
-            }
-        });
-        
-        function startQuiz() {
-            // Get quiz questions from Python
+            // Get quiz data from Python (via Brython)
             try {
-                // Access the quiz_questions from the Python module
-                const pythonQuestions = [
+                quizData = window.__BRYTHON__.imported['quiz_data'].quiz_questions;
+            } catch(e) {
+                // Fallback quiz data if Brython module not loaded
+                quizData = [
                     {
-                        id: 1,
                         question: "What data structure is best for storing the snake's body segments?",
-                        choices: [
-                            "A list (array) of coordinates",
-                            "A single variable",
-                            "A dictionary",
-                            "A string"
-                        ],
-                        correct: 0,
-                        explanation: "A list allows us to store multiple coordinate pairs and easily add/remove segments as the snake grows or moves."
-                    },
-                    {
-                        id: 2,
-                        question: "How do we make the snake move continuously?",
-                        choices: [
-                            "Call a function once",
-                            "Use a timer/interval to repeatedly update position",
-                            "Wait for user input each time",
-                            "Use a while loop"
-                        ],
+                        options: ["A string", "A list/array", "A dictionary", "A single variable"],
                         correct: 1,
-                        explanation: "We use setInterval() or requestAnimationFrame() to repeatedly call the game update function, creating smooth continuous movement."
+                        explanation: "A list/array is perfect because the snake is made of multiple segments."
                     },
                     {
-                        id: 3,
-                        question: "What happens when the snake eats food?",
-                        choices: [
-                            "The game ends",
-                            "The snake gets faster",
-                            "A new segment is added to the snake's body",
-                            "Nothing happens"
-                        ],
+                        question: "In the Snake game, what happens when the snake eats food?",
+                        options: ["The snake gets shorter", "The game ends", "The snake grows longer", "Nothing happens"],
                         correct: 2,
-                        explanation: "When the snake's head reaches food coordinates, we add a new segment to the body list and generate new food at a random location."
+                        explanation: "When the snake eats food, it grows longer."
                     },
                     {
-                        id: 4,
-                        question: "How do we detect if the snake hits the wall?",
-                        choices: [
-                            "Check if head coordinates are outside the canvas boundaries",
-                            "Wait for an error message",
-                            "The browser detects it automatically",
-                            "Count the number of moves"
-                        ],
-                        correct: 0,
-                        explanation: "We check if the snake's head x/y coordinates are less than 0 or greater than the canvas width/height."
-                    },
-                    {
-                        id: 5,
-                        question: "What Python concept allows us to group related game data together?",
-                        choices: [
-                            "Variables",
-                            "Classes/Objects",
-                            "Comments",
-                            "Print statements"
-                        ],
+                        question: "What Python data type would you use to store the snake's direction?",
+                        options: ["A boolean", "A list of two numbers [x, y]", "A single number", "A string"],
                         correct: 1,
-                        explanation: "Classes let us create objects that bundle data (snake position, direction, score) and methods (move, grow, check_collision) together."
+                        explanation: "Direction needs both x and y components."
                     },
                     {
-                        id: 6,
-                        question: "How do we change the snake's direction when arrow keys are pressed?",
-                        choices: [
-                            "Automatically happens",
-                            "Listen for keyboard events and update direction variables",
-                            "Use the mouse",
-                            "Type commands in the console"
-                        ],
+                        question: "What does a game loop do?",
+                        options: ["Runs once and stops", "Repeatedly updates and draws the game", "Saves progress", "Loads images"],
                         correct: 1,
-                        explanation: "We add event listeners for keydown events, check which arrow key was pressed, and update the snake's direction (dx, dy) accordingly."
+                        explanation: "A game loop continuously updates and redraws the game."
+                    },
+                    {
+                        question: "How do you check if the snake hits the wall?",
+                        options: ["Ask the player", "Compare position with boundaries", "Wait for error", "Use random numbers"],
+                        correct: 1,
+                        explanation: "We compare coordinates with game boundaries."
+                    },
+                    {
+                        question: "What is a 'collision' in game programming?",
+                        options: ["Computer crash", "Two objects touch or overlap", "Mouse click", "Game loads"],
+                        correct: 1,
+                        explanation: "Collision detection checks if objects are touching."
                     }
                 ];
-                
-                quizQuestions = pythonQuestions;
-                currentQuestionIndex = 0;
-                quizAnswers = [];
-                
-                displayQuestion();
-                document.getElementById('quizModal').classList.add('show');
-            } catch (e) {
-                console.error("Error loading quiz:", e);
-                alert("Error loading quiz. Please refresh the page.");
-            }
-        }
-        
-        function displayQuestion() {
-            if (currentQuestionIndex >= quizQuestions.length) {
-                showResults();
-                return;
             }
             
-            const question = quizQuestions[currentQuestionIndex];
-            const content = document.getElementById('quizContent');
-            
-            let html = `
-                <div class="quiz-question">
-                    <h3>Question ${currentQuestionIndex + 1} of ${quizQuestions.length}</h3>
-                    <p style="font-size: 1.1em; margin-bottom: 15px;">${question.question}</p>
-                    <div class="quiz-choices" id="quizChoices">
-            `;
-            
-            question.choices.forEach((choice, index) => {
-                html += `
-                    <div class="quiz-choice" data-index="${index}">
-                        ${choice}
-                    </div>
-                `;
-            });
-            
-            html += `
-                    </div>
-                    <div class="quiz-explanation" id="quizExplanation"></div>
-                </div>
-                <div class="quiz-navigation">
-                    <button class="btn btn-secondary" id="prevBtn" ${currentQuestionIndex === 0 ? 'disabled' : ''}>
-                        ← Previous
-                    </button>
-                    <button class="btn btn-primary" id="nextBtn" disabled>
-                        Next →
-                    </button>
-                </div>
-            `;
-            
-            content.innerHTML = html;
-            
-            // Add choice click handlers
-            document.querySelectorAll('.quiz-choice').forEach(choice => {
-                choice.addEventListener('click', function() {
-                    selectAnswer(parseInt(this.dataset.index));
-                });
-            });
-            
-            // Add navigation button handlers
-            document.getElementById('prevBtn')?.addEventListener('click', previousQuestion);
-            document.getElementById('nextBtn')?.addEventListener('click', nextQuestion);
-            
-            // Restore previous answer if exists
-            if (quizAnswers[currentQuestionIndex] !== undefined) {
-                selectAnswer(quizAnswers[currentQuestionIndex], true);
-            }
-        }
-        
-        function selectAnswer(index, skipValidation = false) {
-            const question = quizQuestions[currentQuestionIndex];
-            const choices = document.querySelectorAll('.quiz-choice');
-            const explanation = document.getElementById('quizExplanation');
-            const nextBtn = document.getElementById('nextBtn');
-            
-            // Remove previous selections
-            choices.forEach(c => {
-                c.classList.remove('selected', 'correct', 'incorrect');
-            });
-            
-            // Mark selected choice
-            choices[index].classList.add('selected');
-            
-            if (!skipValidation) {
-                // Check if correct
-                if (index === question.correct) {
-                    choices[index].classList.add('correct');
-                } else {
-                    choices[index].classList.add('incorrect');
-                    choices[question.correct].classList.add('correct');
-                }
-                
-                // Show explanation
-                explanation.innerHTML = `<strong>Explanation:</strong> ${question.explanation}`;
-                explanation.classList.add('show');
-            } else {
-                choices[index].classList.add(index === question.correct ? 'correct' : 'incorrect');
-                choices[question.correct].classList.add('correct');
-                explanation.innerHTML = `<strong>Explanation:</strong> ${question.explanation}`;
-                explanation.classList.add('show');
-            }
-            
-            // Store answer
-            quizAnswers[currentQuestionIndex] = index;
-            
-            // Enable next button
-            nextBtn.disabled = false;
-        }
-        
-        function previousQuestion() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                displayQuestion();
-            }
-        }
-        
-        function nextQuestion() {
-            if (currentQuestionIndex < quizQuestions.length - 1) {
-                currentQuestionIndex++;
-                displayQuestion();
-            } else {
-                showResults();
-            }
-        }
-        
-        function showResults() {
-            let correctCount = 0;
-            quizQuestions.forEach((question, index) => {
-                if (quizAnswers[index] === question.correct) {
-                    correctCount++;
-                }
-            });
-            
-            const coinsEarned = correctCount * 10;
-            const currentCoins = parseInt(localStorage.getItem('coins') || '0');
-            const newCoins = currentCoins + coinsEarned;
-            
-            localStorage.setItem('coins', newCoins.toString());
-            
-            // Save quiz score
-            const quizScores = JSON.parse(localStorage.getItem('quiz_scores') || '[]');
-            quizScores.push({
-                date: new Date().toISOString(),
-                score: correctCount,
-                total: quizQuestions.length,
-                coinsEarned: coinsEarned
-            });
-            localStorage.setItem('quiz_scores', JSON.stringify(quizScores));
-            
-            const content = document.getElementById('quizContent');
-            content.innerHTML = `
-                <div class="quiz-results">
-                    <h3>Quiz Complete! 🎉</h3>
-                    <div class="score">${correctCount} / ${quizQuestions.length}</div>
-                    <p>You got ${correctCount} out of ${quizQuestions.length} questions correct!</p>
-                    <div class="coins-earned">+ ${coinsEarned} 🪙 Coins!</div>
-                    <button class="btn btn-primary" onclick="closeQuiz()">Close</button>
-                    <button class="btn btn-secondary" onclick="startQuiz()">Take Again</button>
-                </div>
-            `;
-            
-            updateCoinDisplay();
-        }
-        
-        function closeQuiz() {
-            document.getElementById('quizModal').classList.remove('show');
-            currentQuestionIndex = 0;
-            quizAnswers = [];
-        }
-        
-        // Show/Hide Code Section
-        document.getElementById('showCodeBtn').addEventListener('click', function() {
-            const codeSection = document.getElementById('codeSection');
-            const isShown = codeSection.classList.contains('show');
-            
-            if (isShown) {
-                codeSection.classList.remove('show');
-                this.textContent = 'Show Code 💻';
-            } else {
-                codeSection.classList.add('show');
-                this.textContent = 'Hide Code 💻';
-                displayCodeSnippets();
-            }
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswers = new Array(quizData.length).fill(null);
+            renderQuiz();
+            document.getElementById('quizModal').classList.add('visible');
         });
         
-        function displayCodeSnippets() {
-            const snippets = {
-                "Snake Body Storage": `# Storing snake body as a list of [x, y] coordinates
-snake_body = [
-    [200, 200],  # Head
-    [190, 200],  # Body segment 1
-    [180, 200]   # Body segment 2
-]`,
-                "Game Loop": `# Game loop using timer
-def game_loop():
-    move_snake()
-    check_collisions()
-    draw_game()
-    
-# Call game_loop repeatedly (every 100ms)
-timer.set_interval(game_loop, 100)`,
-                "Collision Detection": `# Check if snake eats food
-if snake_head[0] == food_x and snake_head[1] == food_y:
-    score += 1
-    # Add new segment (snake grows)
-    snake_body.append([food_x, food_y])
-    spawn_new_food()
-
-# Check if snake hits wall
-if (snake_head[0] < 0 or snake_head[0] >= canvas_width or
-    snake_head[1] < 0 or snake_head[1] >= canvas_height):
-    game_over()`,
-                "Input Handling": `# Handle keyboard input
-@bind(document, "keydown")
-def on_keydown(event):
-    if event.key == "ArrowUp":
-        direction[0] = 0
-        direction[1] = -grid_size
-    elif event.key == "ArrowDown":
-        direction[0] = 0
-        direction[1] = grid_size
-    # ... more direction handling`
-            };
-            
-            const container = document.getElementById('codeSnippets');
+        // Close quiz modal
+        document.getElementById('closeQuiz').addEventListener('click', function() {
+            document.getElementById('quizModal').classList.remove('visible');
+        });
+        
+        document.getElementById('closeResultsBtn').addEventListener('click', function() {
+            document.getElementById('quizModal').classList.remove('visible');
+        });
+        
+        // Retake quiz
+        document.getElementById('retakeQuizBtn').addEventListener('click', function() {
+            currentQuestion = 0;
+            score = 0;
+            selectedAnswers = new Array(quizData.length).fill(null);
+            document.getElementById('quizResults').classList.remove('visible');
+            renderQuiz();
+        });
+        
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
             container.innerHTML = '';
             
-            Object.keys(snippets).forEach(title => {
-                const div = document.createElement('div');
-                div.className = 'code-snippet';
-                div.innerHTML = `
-                    <h4>${title}</h4>
-                    <pre>${snippets[title]}</pre>
-                `;
-                container.appendChild(div);
-            });
-        }
-        
-        // Code Editor functionality
-        function loadOriginalCode() {
-            // Load the snake_game.py code into the editor
-            fetch('snake_game.py')
-                .then(response => response.text())
-                .then(code => {
-                    document.getElementById('codeEditor').value = code;
-                    // Store original code
-                    if (!localStorage.getItem('original_snake_code')) {
-                        localStorage.setItem('original_snake_code', code);
-                    }
-                })
-                .catch(err => {
-                    console.error('Error loading code:', err);
-                    document.getElementById('codeEditor').value = '# Error loading code. Please refresh the page.';
+            const question = quizData[currentQuestion];
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'quiz-question active';
+            
+            const questionTitle = document.createElement('h3');
+            questionTitle.textContent = `Question ${currentQuestion + 1} of ${quizData.length}`;
+            questionDiv.appendChild(questionTitle);
+            
+            const questionText = document.createElement('p');
+            questionText.textContent = question.question;
+            questionText.style.fontSize = '1.1em';
+            questionText.style.marginBottom = '20px';
+            questionDiv.appendChild(questionText);
+            
+            const optionsList = document.createElement('ul');
+            optionsList.className = 'quiz-options';
+            
+            question.options.forEach((option, index) => {
+                const li = document.createElement('li');
+                li.textContent = option;
+                li.dataset.index = index;
+                
+                if (selectedAnswers[currentQuestion] === index) {
+                    li.classList.add('selected');
+                }
+                
+                li.addEventListener('click', function() {
+                    // Remove previous selection
+                    optionsList.querySelectorAll('li').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    // Add new selection
+                    li.classList.add('selected');
+                    selectedAnswers[currentQuestion] = index;
                 });
+                
+                optionsList.appendChild(li);
+            });
+            
+            questionDiv.appendChild(optionsList);
+            
+            // Navigation buttons
+            const navDiv = document.createElement('div');
+            navDiv.className = 'quiz-navigation';
+            
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = 'Previous';
+            prevBtn.className = 'btn-secondary';
+            prevBtn.disabled = currentQuestion === 0;
+            prevBtn.addEventListener('click', function() {
+                if (currentQuestion > 0) {
+                    currentQuestion--;
+                    renderQuiz();
+                }
+            });
+            
+            const nextBtn = document.createElement('button');
+            if (currentQuestion === quizData.length - 1) {
+                nextBtn.textContent = 'Submit Quiz';
+                nextBtn.className = 'btn-primary';
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.className = 'btn-primary';
+            }
+            
+            nextBtn.addEventListener('click', function() {
+                if (selectedAnswers[currentQuestion] === null) {
+                    alert('Please select an answer!');
+                    return;
+                }
+                
+                if (currentQuestion < quizData.length - 1) {
+                    currentQuestion++;
+                    renderQuiz();
+                } else {
+                    submitQuiz();
+                }
+            });
+            
+            navDiv.appendChild(prevBtn);
+            navDiv.appendChild(nextBtn);
+            questionDiv.appendChild(navDiv);
+            
+            container.appendChild(questionDiv);
         }
         
-        document.getElementById('runCodeBtn').addEventListener('click', function() {
-            const editedCode = document.getElementById('codeEditor').value;
+        function submitQuiz() {
+            // Calculate score
+            score = 0;
+            selectedAnswers.forEach((answer, index) => {
+                if (answer === quizData[index].correct) {
+                    score++;
+                }
+            });
             
-            // Save edited code to localStorage
-            localStorage.setItem('edited_snake_code', editedCode);
+            // Update coins (10 coins per correct answer)
+            const coinsEarned = score * 10;
+            const currentCoins = parseInt(localStorage.getItem('coins')) || 0;
+            const newCoins = currentCoins + coinsEarned;
+            localStorage.setItem('coins', newCoins);
+            document.getElementById('coinDisplay').textContent = newCoins;
             
-            // Show a message
-            alert('Code saved! Refresh the page to run your edited code.\n\nNote: This is a simple MVP implementation. In a full version, we would use a proper code bundler to reload the module without refreshing.');
-            
-            // For MVP: Simply reload the page
-            // In production, you'd want to use a more sophisticated approach
-            // window.location.reload();
-        });
+            // Show results
+            document.getElementById('quizContainer').style.display = 'none';
+            document.getElementById('quizResults').classList.add('visible');
+            document.getElementById('quizScoreDisplay').textContent = `${score}/${quizData.length}`;
+            document.getElementById('coinsEarnedDisplay').textContent = `You earned ${coinsEarned} coins! 🪙`;
+        }
         
-        document.getElementById('resetCodeBtn').addEventListener('click', function() {
-            const originalCode = localStorage.getItem('original_snake_code');
-            if (originalCode) {
-                document.getElementById('codeEditor').value = originalCode;
-                localStorage.removeItem('edited_snake_code');
-                alert('Code reset to original!');
-            } else {
-                loadOriginalCode();
-            }
-        });
-        
-        // Load edited code if exists
-        window.addEventListener('load', function() {
-            const editedCode = localStorage.getItem('edited_snake_code');
-            if (editedCode) {
-                document.getElementById('codeEditor').value = editedCode;
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('quizModal');
+            if (event.target === modal) {
+                modal.classList.remove('visible');
             }
         });
     </script>
