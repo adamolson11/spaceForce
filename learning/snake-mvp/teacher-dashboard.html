@@ -79,7 +79,11 @@
             let avgScore = '-';
             if (quizScores.length > 0) {
                 const totalScore = quizScores.reduce((sum, quiz) => {
-                    return sum + (quiz.score / quiz.total * 100);
+                    // Prevent division by zero
+                    if (quiz.total > 0) {
+                        return sum + (quiz.score / quiz.total * 100);
+                    }
+                    return sum;
                 }, 0);
                 avgScore = Math.round(totalScore / quizScores.length) + '%';
             }
