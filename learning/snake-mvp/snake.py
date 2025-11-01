@@ -7,6 +7,7 @@ CANVAS_HEIGHT = 400
 GRID_SIZE = 20
 GRID_WIDTH = CANVAS_WIDTH // GRID_SIZE
 GRID_HEIGHT = CANVAS_HEIGHT // GRID_SIZE
+GAME_SPEED = 150  # milliseconds between game updates
 
 # Game state
 class SnakeGame:
@@ -79,7 +80,7 @@ class SnakeGame:
     def change_direction(self, new_direction):
         """Change snake direction (prevent 180-degree turns)"""
         # Can't reverse direction
-        if (new_direction[0] != -self.direction[0] or 
+        if (new_direction[0] != -self.direction[0] and 
             new_direction[1] != -self.direction[1]):
             self.next_direction = new_direction
     
@@ -146,8 +147,8 @@ class SnakeGame:
             if self.game_over:
                 self.reset()
                 self.game_over = False
-            # Start the game loop (update every 150ms)
-            self.game_loop_timer = timer.set_interval(self.game_loop, 150)
+            # Start the game loop
+            self.game_loop_timer = timer.set_interval(self.game_loop, GAME_SPEED)
     
     def pause(self):
         """Pause the game"""
