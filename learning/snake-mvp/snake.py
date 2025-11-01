@@ -79,7 +79,8 @@ class SnakeGame:
     
     def change_direction(self, new_direction):
         """Change snake direction (prevent 180-degree turns)"""
-        # Can't reverse direction
+        # Can't reverse direction - both components must not be opposite
+        # Using AND ensures we reject moves where the active direction reverses
         if (new_direction[0] != -self.direction[0] and 
             new_direction[1] != -self.direction[1]):
             self.next_direction = new_direction
