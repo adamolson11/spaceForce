@@ -197,7 +197,10 @@ class Enemy {
             if (this.game.spriteUpdate) this.frameX++;
                 if (this.frameX > this.maxFrame){
                     this.markedForDeletion = true;
-                    if (!this.game.gameOver) this.game.score += this.maxLives;
+                    if (!this.game.gameOver) {
+                        this.game.score += this.maxLives;
+                        this.game.createExplosion(this.x + this.width/2, this.y + this.height/2);
+                    }
                 }
 
 
@@ -319,7 +322,8 @@ if (this.lives < 1 && this.game.spriteUpdate) {
     this.frameX++; 
         if (this.frameX > this.maxFrame){
             this.markedForDeletion = true; 
-            this.game.score =+ this.maxLives; 
+            this.game.score =+ this.maxLives;
+            this.game.createExplosion(this.x + this.width/2, this.y + this.height/2);
             this.game.bossLives += 5;
             if (!this.game.gameOver) this.game.newWave(); 
         }
@@ -390,13 +394,42 @@ class Wave {
 
 
 
+class Particle {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 3 + 2;
+        this.speedX = (Math.random() - 0.5) * 6;
+        this.speedY = (Math.random() - 0.5) * 6;
+        this.color = `hsl(${Math.random() * 60 + 15}, 100%, ${Math.random() * 30 + 50}%)`;
+        this.life = 1;
+        this.decay = Math.random() * 0.02 + 0.01;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life -= this.decay;
+        this.size *= 0.97;
+    }
+    draw(context) {
+        context.save();
+        context.globalAlpha = this.life;
+        context.fillStyle = this.color;
+        context.beginPath();
+        context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+    }
+}
+
 class Game { // like the brains of the whole thing
     constructor(canvas){//blueprint for canvas 
         this.canvas = canvas; //local instance of canvas limits it within the object
         this.width = this.canvas.width; //local instance of width and height
         this.height = this.canvas.height;
         this.keys = []; 
-        this.player = new Player(this)
+        this.player = new Player(this);
+        this.particles = [];
         
 
         this.projectilesPool = [];  
@@ -452,7 +485,17 @@ class Game { // like the brains of the whole thing
             this.spriteTimer += deltaTime; 
         }
 
-        this.drawStatusText(context)
+        this.drawStatusText(context);
+        
+        // Update and draw particles
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            this.particles[i].update();
+            this.particles[i].draw(context);
+            if (this.particles[i].life <= 0) {
+                this.particles.splice(i, 1);
+            }
+        }
+        
         this.projectilesPool.forEach(projectile => {
             projectile.update(); 
             projectile.draw(context); 
@@ -462,7 +505,6 @@ class Game { // like the brains of the whole thing
             boss.update();
         })
         this.bossArray = this.bossArray.filter(object => !object.markedForDeletion); 
-        console.log(this.bossArray); 
         this.player.draw(context); 
         this.player.update(); 
       
@@ -474,6 +516,12 @@ class Game { // like the brains of the whole thing
                 wave.nextWaveTrigger = true;
             }
         });
+    }
+    
+    createExplosion(x, y) {
+        for (let i = 0; i < 20; i++) {
+            this.particles.push(new Particle(x, y));
+        }
     }
     
     createProjectiles(){
