@@ -9,9 +9,13 @@ class Laser {
    render(context){
     this.x = this.game.player.x + this.game.player.width * 0.5 - this.width * 0.5;
 
-    context.save(); 
+    context.save();
+    // Add glow effect to laser
+    context.shadowColor = 'gold';
+    context.shadowBlur = 15;
     context.fillStyle = 'gold'; 
     context.fillRect(this.x, this.y, this.width, this.height); 
+    context.shadowBlur = 5;
     context.fillStyle = 'white'; 
     context.fillRect(this.x + this.width * 0.2, this.y, this.width * 0.6, this.height); 
     context.restore(); 
@@ -72,7 +76,8 @@ class Player {
         this.jets_image = document.getElementById('player_jets'); 
         this.frameX = 0; 
         this.jetsFrame = 1; 
-        this.SmallLaser = new SmallLaser(this.game); 
+        this.SmallLaser = new SmallLaser(this.game);
+        this.shootFlash = 0; // Flash effect when shooting
 
     }
     draw(context){
@@ -88,6 +93,19 @@ class Player {
         else {
             this.frameX = 0; 
         }
+        
+        // Draw muzzle flash when shooting
+        if (this.shootFlash > 0) {
+            context.save();
+            context.globalAlpha = this.shootFlash;
+            context.fillStyle = 'yellow';
+            context.beginPath();
+            context.arc(this.x + this.width * 0.5, this.y + 20, 15, 0, Math.PI * 2);
+            context.fill();
+            context.restore();
+            this.shootFlash -= 0.1;
+        }
+        
         context.drawImage(this.jets_image, this.jetsFrame * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height); 
         context.drawImage(this.image, this.frameX* this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height); 
       
@@ -110,7 +128,10 @@ class Player {
     }
     shoot(){
         const projectile = this.game.getProjectile()
-        if (projectile) projectile.start(this.x + this.width * 0.5, this.y); 
+        if (projectile) {
+            projectile.start(this.x + this.width * 0.5, this.y);
+            this.shootFlash = 1.0; // Trigger muzzle flash
+        }
 
 
     }
@@ -137,9 +158,16 @@ class Projectile {
     }
     draw(context){
         if (!this.free){
-            context.save(); 
-            context.fillStyle = 'gold'
-            context.fillRect(this.x,this.y, this.width, this.height);  
+            context.save();
+            // Add glow effect
+            context.shadowColor = 'gold';
+            context.shadowBlur = 10;
+            context.fillStyle = 'gold';
+            context.fillRect(this.x, this.y, this.width, this.height);
+            // Add white center for extra brightness
+            context.shadowBlur = 0;
+            context.fillStyle = 'white';
+            context.fillRect(this.x + this.width * 0.3, this.y, this.width * 0.4, this.height);
             context.restore();   
         }
    
@@ -197,7 +225,10 @@ class Enemy {
             if (this.game.spriteUpdate) this.frameX++;
                 if (this.frameX > this.maxFrame){
                     this.markedForDeletion = true;
-                    if (!this.game.gameOver) this.game.score += this.maxLives;
+                    if (!this.game.gameOver) {
+                        this.game.score += this.maxLives;
+                        this.game.createExplosion(this.x + this.width/2, this.y + this.height/2);
+                    }
                 }
 
 
@@ -319,7 +350,8 @@ if (this.lives < 1 && this.game.spriteUpdate) {
     this.frameX++; 
         if (this.frameX > this.maxFrame){
             this.markedForDeletion = true; 
-            this.game.score =+ this.maxLives; 
+            this.game.score =+ this.maxLives;
+            this.game.createExplosion(this.x + this.width/2, this.y + this.height/2);
             this.game.bossLives += 5;
             if (!this.game.gameOver) this.game.newWave(); 
         }
@@ -390,13 +422,42 @@ class Wave {
 
 
 
+class Particle {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 3 + 2;
+        this.speedX = (Math.random() - 0.5) * 6;
+        this.speedY = (Math.random() - 0.5) * 6;
+        this.color = `hsl(${Math.random() * 60 + 15}, 100%, ${Math.random() * 30 + 50}%)`;
+        this.life = 1;
+        this.decay = Math.random() * 0.02 + 0.01;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life -= this.decay;
+        this.size *= 0.97;
+    }
+    draw(context) {
+        context.save();
+        context.globalAlpha = this.life;
+        context.fillStyle = this.color;
+        context.beginPath();
+        context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
+    }
+}
+
 class Game { // like the brains of the whole thing
     constructor(canvas){//blueprint for canvas 
         this.canvas = canvas; //local instance of canvas limits it within the object
         this.width = this.canvas.width; //local instance of width and height
         this.height = this.canvas.height;
         this.keys = []; 
-        this.player = new Player(this)
+        this.player = new Player(this);
+        this.particles = [];
         
 
         this.projectilesPool = [];  
@@ -452,7 +513,17 @@ class Game { // like the brains of the whole thing
             this.spriteTimer += deltaTime; 
         }
 
-        this.drawStatusText(context)
+        this.drawStatusText(context);
+        
+        // Update and draw particles
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            this.particles[i].update();
+            this.particles[i].draw(context);
+            if (this.particles[i].life <= 0) {
+                this.particles.splice(i, 1);
+            }
+        }
+        
         this.projectilesPool.forEach(projectile => {
             projectile.update(); 
             projectile.draw(context); 
@@ -462,7 +533,6 @@ class Game { // like the brains of the whole thing
             boss.update();
         })
         this.bossArray = this.bossArray.filter(object => !object.markedForDeletion); 
-        console.log(this.bossArray); 
         this.player.draw(context); 
         this.player.update(); 
       
@@ -474,6 +544,12 @@ class Game { // like the brains of the whole thing
                 wave.nextWaveTrigger = true;
             }
         });
+    }
+    
+    createExplosion(x, y) {
+        for (let i = 0; i < 20; i++) {
+            this.particles.push(new Particle(x, y));
+        }
     }
     
     createProjectiles(){
@@ -517,11 +593,26 @@ class Game { // like the brains of the whole thing
 
 
         if (this.gameOver) {
+            // Draw semi-transparent overlay
+            context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            context.fillRect(0, 0, this.width, this.height);
+            
             context.textAlign= 'center'; 
-            context.font = '100px Impact'; 
-            context.fillText("GAME OVER!", this.width * 0.5, this.height * 0.5); 
-            context.font = '20px Impact'; 
-            context.fillText("Press R to restart!", this.width * 0.5, this.height * 0.5 + 30); 
+            context.font = '100px Impact';
+            context.shadowOffsetX = 4;
+            context.shadowOffsetY = 4;
+            context.shadowColor = 'black';
+            context.shadowBlur = 10;
+            context.fillStyle = '#ff4444';
+            context.fillText("GAME OVER!", this.width * 0.5, this.height * 0.5 - 50); 
+            
+            context.font = '40px Impact';
+            context.fillStyle = 'white';
+            context.fillText("Final Score: " + this.score, this.width * 0.5, this.height * 0.5 + 20);
+            
+            context.font = '25px Impact'; 
+            context.fillStyle = '#ffd700';
+            context.fillText("Press R to restart!", this.width * 0.5, this.height * 0.5 + 70); 
         }
     context.restore();
     }
