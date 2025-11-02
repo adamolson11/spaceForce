@@ -9,9 +9,13 @@ class Laser {
    render(context){
     this.x = this.game.player.x + this.game.player.width * 0.5 - this.width * 0.5;
 
-    context.save(); 
+    context.save();
+    // Add glow effect to laser
+    context.shadowColor = 'gold';
+    context.shadowBlur = 15;
     context.fillStyle = 'gold'; 
     context.fillRect(this.x, this.y, this.width, this.height); 
+    context.shadowBlur = 5;
     context.fillStyle = 'white'; 
     context.fillRect(this.x + this.width * 0.2, this.y, this.width * 0.6, this.height); 
     context.restore(); 
@@ -72,7 +76,8 @@ class Player {
         this.jets_image = document.getElementById('player_jets'); 
         this.frameX = 0; 
         this.jetsFrame = 1; 
-        this.SmallLaser = new SmallLaser(this.game); 
+        this.SmallLaser = new SmallLaser(this.game);
+        this.shootFlash = 0; // Flash effect when shooting
 
     }
     draw(context){
@@ -88,6 +93,19 @@ class Player {
         else {
             this.frameX = 0; 
         }
+        
+        // Draw muzzle flash when shooting
+        if (this.shootFlash > 0) {
+            context.save();
+            context.globalAlpha = this.shootFlash;
+            context.fillStyle = 'yellow';
+            context.beginPath();
+            context.arc(this.x + this.width * 0.5, this.y + 20, 15, 0, Math.PI * 2);
+            context.fill();
+            context.restore();
+            this.shootFlash -= 0.1;
+        }
+        
         context.drawImage(this.jets_image, this.jetsFrame * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height); 
         context.drawImage(this.image, this.frameX* this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height); 
       
@@ -110,7 +128,10 @@ class Player {
     }
     shoot(){
         const projectile = this.game.getProjectile()
-        if (projectile) projectile.start(this.x + this.width * 0.5, this.y); 
+        if (projectile) {
+            projectile.start(this.x + this.width * 0.5, this.y);
+            this.shootFlash = 1.0; // Trigger muzzle flash
+        }
 
 
     }
@@ -137,9 +158,16 @@ class Projectile {
     }
     draw(context){
         if (!this.free){
-            context.save(); 
-            context.fillStyle = 'gold'
-            context.fillRect(this.x,this.y, this.width, this.height);  
+            context.save();
+            // Add glow effect
+            context.shadowColor = 'gold';
+            context.shadowBlur = 10;
+            context.fillStyle = 'gold';
+            context.fillRect(this.x, this.y, this.width, this.height);
+            // Add white center for extra brightness
+            context.shadowBlur = 0;
+            context.fillStyle = 'white';
+            context.fillRect(this.x + this.width * 0.3, this.y, this.width * 0.4, this.height);
             context.restore();   
         }
    
@@ -565,11 +593,26 @@ class Game { // like the brains of the whole thing
 
 
         if (this.gameOver) {
+            // Draw semi-transparent overlay
+            context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            context.fillRect(0, 0, this.width, this.height);
+            
             context.textAlign= 'center'; 
-            context.font = '100px Impact'; 
-            context.fillText("GAME OVER!", this.width * 0.5, this.height * 0.5); 
-            context.font = '20px Impact'; 
-            context.fillText("Press R to restart!", this.width * 0.5, this.height * 0.5 + 30); 
+            context.font = '100px Impact';
+            context.shadowOffsetX = 4;
+            context.shadowOffsetY = 4;
+            context.shadowColor = 'black';
+            context.shadowBlur = 10;
+            context.fillStyle = '#ff4444';
+            context.fillText("GAME OVER!", this.width * 0.5, this.height * 0.5 - 50); 
+            
+            context.font = '40px Impact';
+            context.fillStyle = 'white';
+            context.fillText("Final Score: " + this.score, this.width * 0.5, this.height * 0.5 + 20);
+            
+            context.font = '25px Impact'; 
+            context.fillStyle = '#ffd700';
+            context.fillText("Press R to restart!", this.width * 0.5, this.height * 0.5 + 70); 
         }
     context.restore();
     }
