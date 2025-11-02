@@ -1,0 +1,15 @@
+{
+  "name": "spaceforce",
+  "version": "1.0.0",
+  "description": "A quiz game for kids that they can use to learn OOP in JavaScript.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.156.0"
+  }
+}

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Space RPG Adventure - Explore the Solar System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #canvas3d {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+        
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .student-name {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        
+        .coins {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 215, 0, 0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            width: 320px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            z-index: 10;
+        }
+        
+        .info-panel h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .stat-box {
+            background: rgba(0, 255, 0, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        
+        .planet-info {
+            background: rgba(0, 212, 255, 0.2);
+            border-left: 4px solid #00d4ff;
+            padding: 12px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .planet-info h3 {
+            color: #00d4ff;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+        
+        .planet-info p {
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+        
+        .controls-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px 20px;
+            z-index: 10;
+        }
+        
+        .controls-panel h3 {
+            color: #2196F3;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        
+        .controls-panel p {
+            font-size: 0.85em;
+            line-height: 1.4;
+            color: #ccc;
+        }
+        
+        .view-mode {
+            position: absolute;
+            top: 100px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 15px 20px;
+            z-index: 10;
+        }
+        
+        .view-mode button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: #000;
+        }
+        
+        .view-mode button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="student-info">
+                <span>👤</span>
+                <span class="student-name" id="studentNameDisplay">Student</span>
+            </div>
+            <div class="coins">
+                <span>🪙</span>
+                <span id="coinDisplay">0</span>
+                <span>coins</span>
+            </div>
+        </div>
+        
+        <!-- View Mode Controls -->
+        <div class="view-mode">
+            <button id="topViewBtn">Top View 📐</button>
+            <button id="thirdPersonBtn">3D View 🎮</button>
+        </div>
+        
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <h2>📊 Explorer Stats</h2>
+            <div class="stat-box">
+                <div class="stat-label">Distance Traveled</div>
+                <div class="stat-value" id="stepsDisplay">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Current Planet</div>
+                <div class="stat-value" id="currentPlanetDisplay">None</div>
+            </div>
+            
+            <div class="planet-info" id="planetInfo">
+                <h3>🪐 Planet Info</h3>
+                <p id="planetDescription">Move to a planet to see information!</p>
+            </div>
+        </div>
+        
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <h3>🎮 Controls</h3>
+            <p>
+                <strong>Movement:</strong> W/A/S/D or Arrow Keys<br>
+                <strong>Look:</strong> Mouse to rotate camera<br>
+                <strong>View:</strong> Toggle between top and 3D view<br>
+                <strong>Info:</strong> Get close to planets to learn!
+            </p>
+        </div>
+        
+        <canvas id="canvas3d"></canvas>
+    </div>
+
+    <script src="../libs/three.min.js"></script>
+    <script>
+        // Load student info
+        window.addEventListener('load', function() {
+            const studentName = localStorage.getItem('student_name') || 'Guest';
+            document.getElementById('studentNameDisplay').textContent = studentName;
+            
+            const coins = parseInt(localStorage.getItem('coins')) || 0;
+            document.getElementById('coinDisplay').textContent = coins;
+        });
+
+        // Planet data
+        const PLANET_DATA = [
+            {
+                name: 'Sun',
+                position: [0, 0, 0],
+                radius: 20,
+                color: 0xFDB813,
+                emissive: 0xFF6B00,
+                info: 'The Sun: The star at the center of our solar system. Temperature: 5,500°C surface.',
+                isSun: true
+            },
+            {
+                name: 'Mercury',
+                position: [-50, 0, -30],
+                radius: 4,
+                color: 0x8c7853,
+                info: 'Mercury: Closest planet to the Sun. Smallest planet in our solar system. No atmosphere.',
+            },
+            {
+                name: 'Venus',
+                position: [-80, 0, 40],
+                radius: 7,
+                color: 0xffc649,
+                info: 'Venus: Hottest planet in our solar system. Thick, toxic atmosphere. Similar size to Earth.',
+            },
+            {
+                name: 'Earth',
+                position: [70, 0, -50],
+                radius: 7.5,
+                color: 0x4a90e2,
+                info: 'Earth: Our home planet! Only known planet with life. 71% covered by water.',
+            },
+            {
+                name: 'Mars',
+                position: [100, 0, 60],
+                radius: 5.5,
+                color: 0xe27b58,
+                info: 'Mars: The Red Planet. Has the largest volcano in the solar system. Cold and dry.',
+            },
+            {
+                name: 'Jupiter',
+                position: [-120, 0, 100],
+                radius: 14,
+                color: 0xc88b3a,
+                info: 'Jupiter: Largest planet in our solar system. Giant gas planet. Has the Great Red Spot storm.',
+            },
+            {
+                name: 'Saturn',
+                position: [140, 0, 120],
+                radius: 12,
+                color: 0xfad5a5,
+                info: 'Saturn: Famous for its beautiful rings. Second largest planet. Made mostly of gas.',
+                hasRings: true
+            },
+            {
+                name: 'Uranus',
+                position: [-90, 0, -120],
+                radius: 9,
+                color: 0x4fd0e0,
+                info: 'Uranus: Tilted on its side. Ice giant with a blue-green color. Very cold!',
+            },
+            {
+                name: 'Neptune',
+                position: [150, 0, -130],
+                radius: 8.5,
+                color: 0x4166f5,
+                info: 'Neptune: Farthest planet from the Sun. Deep blue color. Strongest winds in solar system.',
+            }
+        ];
+
+        // Game setup
+        class SpaceRPG3D {
+            constructor() {
+                this.container = document.getElementById('container');
+                this.canvas = document.getElementById('canvas3d');
+                
+                // Scene setup
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0x000510);
+                
+                // Camera setup
+                this.setupCamera();
+                
+                // Renderer setup
+                this.renderer = new THREE.WebGLRenderer({ 
+                    canvas: this.canvas,
+                    antialias: true 
+                });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                
+                // Game state
+                this.distance = 0;
+                this.currentPlanet = null;
+                this.isTopView = false;
+                this.playerSpeed = 0.5;
+                this.keysPressed = {};
+                
+                // Create scene
+                this.createStarfield();
+                this.createLights();
+                this.createPlayer();
+                this.createPlanets();
+                
+                // Setup controls
+                this.setupControls();
+                
+                // Start animation
+                this.lastTime = performance.now();
+                this.animate();
+            }
+            
+            setupCamera() {
+                const aspect = window.innerWidth / window.innerHeight;
+                this.camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 1000);
+                this.camera.position.set(0, 50, 100);
+                this.camera.lookAt(0, 0, 0);
+            }
+            
+            createStarfield() {
+                const starsGeometry = new THREE.BufferGeometry();
+                const starsMaterial = new THREE.PointsMaterial({
+                    color: 0xffffff,
+                    size: 0.7,
+                    sizeAttenuation: true
+                });
+                
+                const starsVertices = [];
+                for (let i = 0; i < 5000; i++) {
+                    const x = (Math.random() - 0.5) * 2000;
+                    const y = (Math.random() - 0.5) * 2000;
+                    const z = (Math.random() - 0.5) * 2000;
+                    starsVertices.push(x, y, z);
+                }
+                
+                starsGeometry.setAttribute('position', 
+                    new THREE.Float32BufferAttribute(starsVertices, 3));
+                
+                this.stars = new THREE.Points(starsGeometry, starsMaterial);
+                this.scene.add(this.stars);
+            }
+            
+            createLights() {
+                // Ambient light
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+                this.scene.add(ambientLight);
+                
+                // Sun light (point light at sun position)
+                const sunLight = new THREE.PointLight(0xffffff, 2, 500);
+                sunLight.position.set(0, 0, 0);
+                this.scene.add(sunLight);
+            }
+            
+            createPlayer() {
+                // Create a spaceship using simple geometry
+                const shipGeometry = new THREE.ConeGeometry(2, 5, 8);
+                const shipMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x00ff00,
+                    emissive: 0x00ff00,
+                    emissiveIntensity: 0.5
+                });
+                this.player = new THREE.Mesh(shipGeometry, shipMaterial);
+                this.player.rotation.x = Math.PI / 2; // Point forward
+                this.player.position.set(70, 0, -40); // Start near Earth
+                
+                // Add glow effect
+                const glowGeometry = new THREE.SphereGeometry(3, 16, 16);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x00ff00,
+                    transparent: true,
+                    opacity: 0.3
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                this.player.add(glow);
+                
+                this.scene.add(this.player);
+            }
+            
+            createPlanets() {
+                this.planets = [];
+                
+                PLANET_DATA.forEach(data => {
+                    const geometry = new THREE.SphereGeometry(data.radius, 32, 32);
+                    const material = new THREE.MeshStandardMaterial({ 
+                        color: data.color,
+                        emissive: data.emissive || data.color,
+                        emissiveIntensity: data.isSun ? 1 : 0.2
+                    });
+                    
+                    const planet = new THREE.Mesh(geometry, material);
+                    planet.position.set(...data.position);
+                    planet.userData = data;
+                    
+                    // Add glow for sun
+                    if (data.isSun) {
+                        const glowGeometry = new THREE.SphereGeometry(data.radius * 1.5, 32, 32);
+                        const glowMaterial = new THREE.MeshBasicMaterial({
+                            color: data.emissive,
+                            transparent: true,
+                            opacity: 0.3
+                        });
+                        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                        planet.add(glow);
+                    }
+                    
+                    // Add rings for Saturn
+                    if (data.hasRings) {
+                        const ringGeometry = new THREE.RingGeometry(
+                            data.radius * 1.5,
+                            data.radius * 2,
+                            64
+                        );
+                        const ringMaterial = new THREE.MeshBasicMaterial({
+                            color: 0xfad5a5,
+                            side: THREE.DoubleSide,
+                            transparent: true,
+                            opacity: 0.6
+                        });
+                        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+                        ring.rotation.x = Math.PI / 2;
+                        planet.add(ring);
+                    }
+                    
+                    this.scene.add(planet);
+                    this.planets.push(planet);
+                });
+            }
+            
+            setupControls() {
+                // Keyboard
+                document.addEventListener('keydown', (e) => {
+                    this.keysPressed[e.key.toLowerCase()] = true;
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    this.keysPressed[e.key.toLowerCase()] = false;
+                });
+                
+                // Mouse movement for camera rotation (in 3D mode)
+                this.mouseX = 0;
+                this.mouseY = 0;
+                document.addEventListener('mousemove', (e) => {
+                    this.mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                    this.mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+                });
+                
+                // View mode buttons
+                document.getElementById('topViewBtn').addEventListener('click', () => {
+                    this.isTopView = true;
+                });
+                
+                document.getElementById('thirdPersonBtn').addEventListener('click', () => {
+                    this.isTopView = false;
+                });
+                
+                // Window resize
+                window.addEventListener('resize', () => {
+                    this.camera.aspect = window.innerWidth / window.innerHeight;
+                    this.camera.updateProjectionMatrix();
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                });
+            }
+            
+            updatePlayer(deltaTime) {
+                let dx = 0, dz = 0;
+                
+                // Movement
+                if (this.keysPressed['w'] || this.keysPressed['arrowup']) dz -= 1;
+                if (this.keysPressed['s'] || this.keysPressed['arrowdown']) dz += 1;
+                if (this.keysPressed['a'] || this.keysPressed['arrowleft']) dx -= 1;
+                if (this.keysPressed['d'] || this.keysPressed['arrowright']) dx += 1;
+                
+                if (dx !== 0 || dz !== 0) {
+                    // Normalize diagonal movement
+                    const length = Math.sqrt(dx * dx + dz * dz);
+                    dx /= length;
+                    dz /= length;
+                    
+                    // Apply movement
+                    this.player.position.x += dx * this.playerSpeed;
+                    this.player.position.z += dz * this.playerSpeed;
+                    
+                    // Update distance
+                    this.distance += Math.sqrt(dx * dx + dz * dz) * this.playerSpeed;
+                    document.getElementById('stepsDisplay').textContent = Math.floor(this.distance);
+                    
+                    // Rotate player to face movement direction
+                    const angle = Math.atan2(dx, -dz);
+                    this.player.rotation.y = angle;
+                }
+                
+                // Rotate planets slowly
+                this.planets.forEach(planet => {
+                    planet.rotation.y += 0.001;
+                });
+            }
+            
+            updateCamera() {
+                if (this.isTopView) {
+                    // Top-down view
+                    this.camera.position.set(
+                        this.player.position.x,
+                        150,
+                        this.player.position.z
+                    );
+                    this.camera.lookAt(this.player.position);
+                } else {
+                    // Third-person view with mouse control
+                    const distance = 50;
+                    const height = 20;
+                    
+                    const angleX = this.mouseX * 0.5;
+                    const angleY = this.mouseY * 0.3;
+                    
+                    this.camera.position.set(
+                        this.player.position.x + Math.sin(angleX) * distance,
+                        this.player.position.y + height + angleY * 20,
+                        this.player.position.z + Math.cos(angleX) * distance
+                    );
+                    this.camera.lookAt(this.player.position);
+                }
+            }
+            
+            checkPlanetProximity() {
+                let nearestPlanet = null;
+                let minDistance = Infinity;
+                
+                this.planets.forEach(planet => {
+                    const dx = this.player.position.x - planet.position.x;
+                    const dz = this.player.position.z - planet.position.z;
+                    const dist = Math.sqrt(dx * dx + dz * dz);
+                    
+                    if (dist < planet.userData.radius + 20 && dist < minDistance) {
+                        minDistance = dist;
+                        nearestPlanet = planet;
+                    }
+                });
+                
+                if (nearestPlanet && nearestPlanet !== this.currentPlanet) {
+                    this.currentPlanet = nearestPlanet;
+                    document.getElementById('currentPlanetDisplay').textContent = 
+                        nearestPlanet.userData.name;
+                    document.getElementById('planetDescription').textContent = 
+                        nearestPlanet.userData.info;
+                } else if (!nearestPlanet && this.currentPlanet) {
+                    this.currentPlanet = null;
+                    document.getElementById('currentPlanetDisplay').textContent = 'In Space';
+                    document.getElementById('planetDescription').textContent = 
+                        'Exploring the void of space...';
+                }
+            }
+            
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                
+                const currentTime = performance.now();
+                const deltaTime = (currentTime - this.lastTime) / 1000;
+                this.lastTime = currentTime;
+                
+                // Update game
+                this.updatePlayer(deltaTime);
+                this.updateCamera();
+                this.checkPlanetProximity();
+                
+                // Render
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // Start game
+        window.addEventListener('load', () => {
+            new SpaceRPG3D();
+        });
+    </script>
+</body>
+</html>
