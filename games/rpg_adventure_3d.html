@@ -322,13 +322,17 @@
                 // Camera setup
                 this.setupCamera();
                 
-                // Renderer setup
+                // Renderer setup with enhanced quality
                 this.renderer = new THREE.WebGLRenderer({ 
                     canvas: this.canvas,
-                    antialias: true 
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: 'high-performance'
                 });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                this.renderer.toneMappingExposure = 1.2;
                 
                 // Game state
                 this.distance = 0;
@@ -359,61 +363,166 @@
             }
             
             createStarfield() {
-                const starsGeometry = new THREE.BufferGeometry();
-                const starsMaterial = new THREE.PointsMaterial({
-                    color: 0xffffff,
-                    size: 0.7,
-                    sizeAttenuation: true
+                // Create multiple layers of stars with varying sizes and colors for depth
+                const starLayers = [
+                    { count: 3000, size: 0.5, distance: 800, color: 0xffffff },
+                    { count: 2000, size: 1.0, distance: 600, color: 0xffffee },
+                    { count: 1000, size: 1.5, distance: 400, color: 0xaaaaff },
+                    { count: 500, size: 2.0, distance: 300, color: 0xffaaaa }
+                ];
+                
+                starLayers.forEach(layer => {
+                    const starsGeometry = new THREE.BufferGeometry();
+                    const starsVertices = [];
+                    const starsColors = [];
+                    
+                    for (let i = 0; i < layer.count; i++) {
+                        const x = (Math.random() - 0.5) * layer.distance * 2;
+                        const y = (Math.random() - 0.5) * layer.distance * 2;
+                        const z = (Math.random() - 0.5) * layer.distance * 2;
+                        starsVertices.push(x, y, z);
+                        
+                        // Add slight color variation
+                        const color = new THREE.Color(layer.color);
+                        color.offsetHSL(0, 0, Math.random() * 0.2 - 0.1);
+                        starsColors.push(color.r, color.g, color.b);
+                    }
+                    
+                    starsGeometry.setAttribute('position', 
+                        new THREE.Float32BufferAttribute(starsVertices, 3));
+                    starsGeometry.setAttribute('color',
+                        new THREE.Float32BufferAttribute(starsColors, 3));
+                    
+                    const starsMaterial = new THREE.PointsMaterial({
+                        size: layer.size,
+                        sizeAttenuation: true,
+                        vertexColors: true,
+                        transparent: true,
+                        opacity: 0.8,
+                        blending: THREE.AdditiveBlending
+                    });
+                    
+                    const stars = new THREE.Points(starsGeometry, starsMaterial);
+                    this.scene.add(stars);
                 });
                 
-                const starsVertices = [];
-                for (let i = 0; i < 5000; i++) {
-                    const x = (Math.random() - 0.5) * 2000;
-                    const y = (Math.random() - 0.5) * 2000;
-                    const z = (Math.random() - 0.5) * 2000;
-                    starsVertices.push(x, y, z);
-                }
-                
-                starsGeometry.setAttribute('position', 
-                    new THREE.Float32BufferAttribute(starsVertices, 3));
-                
-                this.stars = new THREE.Points(starsGeometry, starsMaterial);
-                this.scene.add(this.stars);
-            }
-            
-            createLights() {
-                // Ambient light
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-                this.scene.add(ambientLight);
-                
-                // Sun light (point light at sun position)
-                const sunLight = new THREE.PointLight(0xffffff, 2, 500);
-                sunLight.position.set(0, 0, 0);
-                this.scene.add(sunLight);
-            }
-            
-            createPlayer() {
-                // Create a spaceship using simple geometry
-                const shipGeometry = new THREE.ConeGeometry(2, 5, 8);
-                const shipMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x00ff00,
-                    emissive: 0x00ff00,
-                    emissiveIntensity: 0.5
-                });
-                this.player = new THREE.Mesh(shipGeometry, shipMaterial);
-                this.player.rotation.x = Math.PI / 2; // Point forward
-                this.player.position.set(70, 0, -40); // Start near Earth
-                
-                // Add glow effect
-                const glowGeometry = new THREE.SphereGeometry(3, 16, 16);
-                const glowMaterial = new THREE.MeshBasicMaterial({
-                    color: 0x00ff00,
+                // Add a distant nebula backdrop
+                const nebulaGeometry = new THREE.SphereGeometry(900, 32, 32);
+                const nebulaMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x220044,
+                    side: THREE.BackSide,
                     transparent: true,
                     opacity: 0.3
                 });
-                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-                this.player.add(glow);
+                const nebula = new THREE.Mesh(nebulaGeometry, nebulaMaterial);
+                this.scene.add(nebula);
+            }
+            
+            createLights() {
+                // Ambient light - subtle purple/blue space ambient
+                const ambientLight = new THREE.AmbientLight(0x4444aa, 0.2);
+                this.scene.add(ambientLight);
                 
+                // Sun light (point light at sun position) - intense and realistic
+                const sunLight = new THREE.PointLight(0xffffaa, 3, 600);
+                sunLight.position.set(0, 0, 0);
+                sunLight.castShadow = false; // Disabled for performance
+                this.scene.add(sunLight);
+                
+                // Add subtle directional fill light from behind for depth
+                const fillLight = new THREE.DirectionalLight(0x4466ff, 0.3);
+                fillLight.position.set(0, 100, 200);
+                this.scene.add(fillLight);
+            }
+            
+            createPlayer() {
+                // Create a more detailed spaceship
+                this.player = new THREE.Group();
+                
+                // Main body - sleek fuselage
+                const bodyGeometry = new THREE.ConeGeometry(2.5, 8, 8);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x22ff44,
+                    metalness: 0.8,
+                    roughness: 0.2,
+                    emissive: 0x00aa22,
+                    emissiveIntensity: 0.4
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.rotation.x = Math.PI / 2;
+                this.player.add(body);
+                
+                // Cockpit window
+                const cockpitGeometry = new THREE.SphereGeometry(1.2, 16, 16);
+                const cockpitMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x4488ff,
+                    metalness: 0.9,
+                    roughness: 0.1,
+                    emissive: 0x0044ff,
+                    emissiveIntensity: 0.6,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
+                cockpit.position.set(0, 0, 2);
+                this.player.add(cockpit);
+                
+                // Wings
+                const wingGeometry = new THREE.BoxGeometry(8, 0.3, 3);
+                const wingMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x11dd33,
+                    metalness: 0.7,
+                    roughness: 0.3
+                });
+                const wings = new THREE.Mesh(wingGeometry, wingMaterial);
+                wings.position.set(0, 0, -1);
+                this.player.add(wings);
+                
+                // Engine glow (multiple)
+                const enginePositions = [
+                    [-2, 0, -4],
+                    [2, 0, -4],
+                    [0, 0, -4.5]
+                ];
+                
+                enginePositions.forEach(pos => {
+                    const engineGeometry = new THREE.CylinderGeometry(0.4, 0.6, 1.5, 8);
+                    const engineMaterial = new THREE.MeshStandardMaterial({
+                        color: 0xff6600,
+                        emissive: 0xff3300,
+                        emissiveIntensity: 1
+                    });
+                    const engine = new THREE.Mesh(engineGeometry, engineMaterial);
+                    engine.position.set(pos[0], pos[1], pos[2]);
+                    engine.rotation.x = Math.PI / 2;
+                    this.player.add(engine);
+                    
+                    // Engine particle trail
+                    const trailGeometry = new THREE.SphereGeometry(1, 8, 8);
+                    const trailMaterial = new THREE.MeshBasicMaterial({
+                        color: 0xff4400,
+                        transparent: true,
+                        opacity: 0.4,
+                        blending: THREE.AdditiveBlending
+                    });
+                    const trail = new THREE.Mesh(trailGeometry, trailMaterial);
+                    trail.position.set(pos[0], pos[1], pos[2] - 1.5);
+                    trail.scale.set(0.8, 0.8, 2);
+                    this.player.add(trail);
+                });
+                
+                // Outer glow halo
+                const haloGeometry = new THREE.SphereGeometry(5, 16, 16);
+                const haloMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x00ff44,
+                    transparent: true,
+                    opacity: 0.15,
+                    blending: THREE.AdditiveBlending
+                });
+                const halo = new THREE.Mesh(haloGeometry, haloMaterial);
+                this.player.add(halo);
+                
+                this.player.position.set(70, 0, -40); // Start near Earth
                 this.scene.add(this.player);
             }
             
@@ -421,45 +530,118 @@
                 this.planets = [];
                 
                 PLANET_DATA.forEach(data => {
-                    const geometry = new THREE.SphereGeometry(data.radius, 32, 32);
-                    const material = new THREE.MeshStandardMaterial({ 
-                        color: data.color,
-                        emissive: data.emissive || data.color,
-                        emissiveIntensity: data.isSun ? 1 : 0.2
-                    });
+                    const geometry = new THREE.SphereGeometry(data.radius, 64, 64);
+                    
+                    // Create high-quality materials with realistic properties
+                    let material;
+                    if (data.isSun) {
+                        material = new THREE.MeshStandardMaterial({ 
+                            color: data.color,
+                            emissive: data.emissive,
+                            emissiveIntensity: 1.2,
+                            roughness: 1,
+                            metalness: 0
+                        });
+                    } else {
+                        material = new THREE.MeshStandardMaterial({ 
+                            color: data.color,
+                            emissive: data.emissive || data.color,
+                            emissiveIntensity: 0.1,
+                            roughness: 0.7,
+                            metalness: 0.2
+                        });
+                    }
                     
                     const planet = new THREE.Mesh(geometry, material);
                     planet.position.set(...data.position);
                     planet.userData = data;
                     
-                    // Add glow for sun
+                    // Enhanced sun glow with multiple layers
                     if (data.isSun) {
-                        const glowGeometry = new THREE.SphereGeometry(data.radius * 1.5, 32, 32);
-                        const glowMaterial = new THREE.MeshBasicMaterial({
-                            color: data.emissive,
+                        // Inner corona
+                        const innerGlowGeometry = new THREE.SphereGeometry(data.radius * 1.2, 32, 32);
+                        const innerGlowMaterial = new THREE.MeshBasicMaterial({
+                            color: 0xffaa00,
                             transparent: true,
-                            opacity: 0.3
+                            opacity: 0.4,
+                            blending: THREE.AdditiveBlending
                         });
-                        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-                        planet.add(glow);
+                        const innerGlow = new THREE.Mesh(innerGlowGeometry, innerGlowMaterial);
+                        planet.add(innerGlow);
+                        
+                        // Outer corona
+                        const outerGlowGeometry = new THREE.SphereGeometry(data.radius * 1.8, 32, 32);
+                        const outerGlowMaterial = new THREE.MeshBasicMaterial({
+                            color: 0xff6600,
+                            transparent: true,
+                            opacity: 0.2,
+                            blending: THREE.AdditiveBlending
+                        });
+                        const outerGlow = new THREE.Mesh(outerGlowGeometry, outerGlowMaterial);
+                        planet.add(outerGlow);
+                    } else {
+                        // Add atmospheric glow for planets
+                        const atmosphereGeometry = new THREE.SphereGeometry(data.radius * 1.15, 32, 32);
+                        const atmosphereColor = new THREE.Color(data.color);
+                        atmosphereColor.offsetHSL(0, 0.3, 0.2);
+                        
+                        const atmosphereMaterial = new THREE.MeshBasicMaterial({
+                            color: atmosphereColor,
+                            transparent: true,
+                            opacity: 0.25,
+                            blending: THREE.AdditiveBlending,
+                            side: THREE.BackSide
+                        });
+                        const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+                        planet.add(atmosphere);
                     }
                     
-                    // Add rings for Saturn
+                    // Enhanced rings for Saturn
                     if (data.hasRings) {
-                        const ringGeometry = new THREE.RingGeometry(
+                        // Multiple ring layers for depth
+                        const ringLayers = [
+                            { inner: 1.5, outer: 2.0, color: 0xfad5a5, opacity: 0.8 },
+                            { inner: 2.0, outer: 2.4, color: 0xe8c89a, opacity: 0.6 },
+                            { inner: 2.4, outer: 2.7, color: 0xd4b58d, opacity: 0.4 }
+                        ];
+                        
+                        ringLayers.forEach(layer => {
+                            const ringGeometry = new THREE.RingGeometry(
+                                data.radius * layer.inner,
+                                data.radius * layer.outer,
+                                128
+                            );
+                            const ringMaterial = new THREE.MeshStandardMaterial({
+                                color: layer.color,
+                                side: THREE.DoubleSide,
+                                transparent: true,
+                                opacity: layer.opacity,
+                                roughness: 0.8,
+                                metalness: 0.1
+                            });
+                            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+                            ring.rotation.x = Math.PI / 2;
+                            ring.rotation.y = 0.3; // Slight tilt for realism
+                            planet.add(ring);
+                        });
+                        
+                        // Add ring glow
+                        const ringGlowGeometry = new THREE.RingGeometry(
                             data.radius * 1.5,
-                            data.radius * 2,
+                            data.radius * 2.7,
                             64
                         );
-                        const ringMaterial = new THREE.MeshBasicMaterial({
-                            color: 0xfad5a5,
+                        const ringGlowMaterial = new THREE.MeshBasicMaterial({
+                            color: 0xffffff,
                             side: THREE.DoubleSide,
                             transparent: true,
-                            opacity: 0.6
+                            opacity: 0.1,
+                            blending: THREE.AdditiveBlending
                         });
-                        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-                        ring.rotation.x = Math.PI / 2;
-                        planet.add(ring);
+                        const ringGlow = new THREE.Mesh(ringGlowGeometry, ringGlowMaterial);
+                        ringGlow.rotation.x = Math.PI / 2;
+                        ringGlow.rotation.y = 0.3;
+                        planet.add(ringGlow);
                     }
                     
                     this.scene.add(planet);
@@ -530,10 +712,35 @@
                     this.player.rotation.y = angle;
                 }
                 
-                // Rotate planets slowly
-                this.planets.forEach(planet => {
-                    planet.rotation.y += 0.001;
+                // Rotate planets slowly with different speeds for realism
+                this.planets.forEach((planet, index) => {
+                    // Different rotation speeds for variety
+                    const rotationSpeed = 0.0005 + (index * 0.0001);
+                    planet.rotation.y += rotationSpeed;
+                    
+                    // Pulsing glow effect for sun and atmospheres
+                    if (planet.userData.isSun) {
+                        const pulseSpeed = 0.5;
+                        const pulse = Math.sin(Date.now() * 0.001 * pulseSpeed) * 0.1 + 1;
+                        planet.children.forEach((child, childIndex) => {
+                            if (child.material && child.material.transparent) {
+                                const baseOpacity = childIndex === 0 ? 0.4 : 0.2;
+                                child.material.opacity = baseOpacity * pulse;
+                            }
+                        });
+                    }
                 });
+                
+                // Animate spaceship engine trails
+                if (this.player.children) {
+                    this.player.children.forEach(child => {
+                        if (child.material && child.material.color && 
+                            child.material.color.getHex() === 0xff4400) {
+                            const pulse = Math.sin(Date.now() * 0.005) * 0.2 + 0.6;
+                            child.material.opacity = pulse;
+                        }
+                    });
+                }
             }
             
             updateCamera() {
