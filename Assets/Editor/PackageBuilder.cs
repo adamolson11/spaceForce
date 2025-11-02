@@ -11,8 +11,8 @@ using System.IO;
 public class PackageBuilder : EditorWindow
 {
     private Vector2 scrollPosition;
-    private string packageName = "PlanetAssets";
-    private string outputFolder = "Builds";
+    private string packageName = "spaceforce_planet_assets";
+    private string outputFolder = "Packages";
     private bool includeTextures = true;
     private bool includeMaterials = true;
     private bool includePrefabs = true;
@@ -201,7 +201,7 @@ public class PackageBuilder : EditorWindow
         includeScenes = true;
         includeScripts = true;
         
-        packageName = "PlanetAssets_Complete";
+        packageName = "spaceforce_planet_assets_complete";
         BuildPackage();
         
         // Restore previous settings
@@ -263,12 +263,12 @@ public static class QuickPackageBuilder
             return;
         }
         
-        string outputPath = "Builds/PlanetAssets.unitypackage";
+        string outputPath = "Packages/spaceforce_planet_assets.unitypackage";
         
-        // Ensure Builds folder exists
-        if (!Directory.Exists("Builds"))
+        // Ensure Packages folder exists
+        if (!Directory.Exists("Packages"))
         {
-            Directory.CreateDirectory("Builds");
+            Directory.CreateDirectory("Packages");
         }
         
         try
