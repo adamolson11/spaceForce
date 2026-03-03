@@ -10,6 +10,7 @@
     #froggerCanvas {
       max-width: 100%;
       background: rgba(0, 0, 0, 0.35);
+      image-rendering: pixelated;
     }
 
     .mission-step {
@@ -128,19 +129,19 @@
       }
 
       draw(context) {
-        context.fillStyle = '#6fffb0';
-        context.fillRect(this.x, this.y, this.size, this.size);
+        context.drawImage(this.game.sprites.frog, this.x, this.y, this.size, this.size);
       }
     }
 
     class Mover {
-      constructor(x, y, width, height, speed, direction) {
+      constructor(x, y, width, height, speed, direction, style = {}) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.speed = speed;
         this.direction = direction;
+        this.style = style;
       }
 
       update(deltaTime, canvasWidth) {
@@ -163,15 +164,21 @@
 
     class Vehicle extends Mover {
       draw(context) {
-        context.fillStyle = '#ff7e7e';
-        context.fillRect(this.x, this.y, this.width, this.height);
+        context.save();
+        if (this.direction < 0) {
+          context.translate(this.x + this.width, this.y);
+          context.scale(-1, 1);
+          context.drawImage(this.style.sprite, 0, 0, this.width, this.height);
+        } else {
+          context.drawImage(this.style.sprite, this.x, this.y, this.width, this.height);
+        }
+        context.restore();
       }
     }
 
     class LogPlatform extends Mover {
       draw(context) {
-        context.fillStyle = '#d8b88a';
-        context.fillRect(this.x, this.y, this.width, this.height);
+        context.drawImage(this.style.sprite, this.x, this.y, this.width, this.height);
       }
     }
 
@@ -196,9 +203,10 @@
         for (let index = 0; index < this.count; index += 1) {
           const x = index * (this.itemWidth + this.gap);
           if (this.type === 'road') {
-            this.items.push(new Vehicle(x, laneY, this.itemWidth, laneHeight, this.speed, this.direction));
+            const sprite = index % 2 === 0 ? this.game.sprites.carA : this.game.sprites.carB;
+            this.items.push(new Vehicle(x, laneY, this.itemWidth, laneHeight, this.speed, this.direction, { sprite }));
           } else {
-            this.items.push(new LogPlatform(x, laneY, this.itemWidth, laneHeight, this.speed, this.direction));
+            this.items.push(new LogPlatform(x, laneY, this.itemWidth, laneHeight, this.speed, this.direction, { sprite: this.game.sprites.log }));
           }
         }
       }
@@ -222,7 +230,7 @@
         this.running = false;
         this.lastTime = 0;
         this.points = 0;
-        this.lives = 3;
+        this.lives = 5;
         this.level = 1;
         this.state = 'ready';
         this.stepMoveCount = 0;
@@ -230,13 +238,14 @@
         this.reachedTop = false;
         this.pendingQuiz = null;
         this.frog = new Frog(this);
+        this.sprites = this.createSprites();
         this.lanes = [];
         this.steps = [
           {
             id: 'step-1',
             title: 'Step 1: Movement Basics',
-            detail: 'Move 4 times with arrow keys to practice input handling.',
-            complete: () => this.stepMoveCount >= 4,
+            detail: 'Move 3 times with arrow keys to practice input handling.',
+            complete: () => this.stepMoveCount >= 3,
             quiz: {
               question: 'Which keyboard event should this game listen for movement?',
               options: ['keydown', 'resize', 'pointermove'],
@@ -274,15 +283,72 @@
         this.answeredSteps = new Set();
       }
 
+      createSprites() {
+        const makeCanvas = (width, height) => {
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          return canvas;
+        };
+
+        const frog = makeCanvas(48, 48);
+        const frogCtx = frog.getContext('2d');
+        frogCtx.fillStyle = '#49d86f';
+        frogCtx.fillRect(8, 10, 32, 28);
+        frogCtx.fillStyle = '#2f8f47';
+        frogCtx.fillRect(12, 14, 24, 10);
+        frogCtx.fillStyle = '#ffffff';
+        frogCtx.fillRect(14, 16, 5, 5);
+        frogCtx.fillRect(29, 16, 5, 5);
+        frogCtx.fillStyle = '#000000';
+        frogCtx.fillRect(16, 17, 2, 2);
+        frogCtx.fillRect(31, 17, 2, 2);
+        frogCtx.fillStyle = '#6fffb0';
+        frogCtx.fillRect(10, 34, 10, 8);
+        frogCtx.fillRect(28, 34, 10, 8);
+
+        const carSprite = (body, roof) => {
+          const car = makeCanvas(80, 32);
+          const carCtx = car.getContext('2d');
+          carCtx.fillStyle = body;
+          carCtx.fillRect(4, 10, 72, 16);
+          carCtx.fillRect(20, 4, 40, 10);
+          carCtx.fillStyle = roof;
+          carCtx.fillRect(24, 6, 32, 6);
+          carCtx.fillStyle = '#222';
+          carCtx.fillRect(12, 24, 12, 6);
+          carCtx.fillRect(56, 24, 12, 6);
+          carCtx.fillStyle = '#8ad2ff';
+          carCtx.fillRect(27, 7, 10, 4);
+          carCtx.fillRect(43, 7, 10, 4);
+          return car;
+        };
+
+        const log = makeCanvas(96, 28);
+        const logCtx = log.getContext('2d');
+        logCtx.fillStyle = '#a07248';
+        logCtx.fillRect(2, 4, 92, 20);
+        logCtx.fillStyle = '#7c5232';
+        logCtx.fillRect(10, 8, 10, 12);
+        logCtx.fillRect(30, 8, 10, 12);
+        logCtx.fillRect(50, 8, 10, 12);
+        logCtx.fillRect(70, 8, 10, 12);
+
+        return {
+          frog,
+          carA: carSprite('#f06d6d', '#ffd9d9'),
+          carB: carSprite('#ffd166', '#fff0bf'),
+          log
+        };
+      }
+
       setupLanes() {
         this.lanes = [
-          new Lane(this, 2, 'river', 95 + this.level * 8, 1, this.cellSize * 2.2, this.cellSize * 1.6, 4),
-          new Lane(this, 3, 'river', 110 + this.level * 8, -1, this.cellSize * 2.0, this.cellSize * 1.8, 4),
-          new Lane(this, 4, 'river', 88 + this.level * 8, 1, this.cellSize * 2.4, this.cellSize * 1.4, 4),
-          new Lane(this, 6, 'road', 140 + this.level * 10, -1, this.cellSize * 1.4, this.cellSize * 1.8, 5),
-          new Lane(this, 7, 'road', 120 + this.level * 10, 1, this.cellSize * 1.6, this.cellSize * 1.6, 5),
-          new Lane(this, 8, 'road', 150 + this.level * 10, -1, this.cellSize * 1.2, this.cellSize * 2.0, 5),
-          new Lane(this, 9, 'road', 100 + this.level * 10, 1, this.cellSize * 1.8, this.cellSize * 1.5, 5)
+          new Lane(this, 2, 'river', 58 + this.level * 5, 1, this.cellSize * 2.8, this.cellSize * 2.8, 3),
+          new Lane(this, 3, 'river', 64 + this.level * 5, -1, this.cellSize * 2.8, this.cellSize * 2.8, 3),
+          new Lane(this, 6, 'road', 72 + this.level * 6, -1, this.cellSize * 1.8, this.cellSize * 2.4, 3),
+          new Lane(this, 7, 'road', 66 + this.level * 6, 1, this.cellSize * 1.8, this.cellSize * 2.4, 3),
+          new Lane(this, 8, 'road', 78 + this.level * 6, -1, this.cellSize * 1.8, this.cellSize * 2.6, 3)
         ];
       }
 
@@ -328,7 +394,7 @@
         this.state = 'ready';
         this.lastTime = 0;
         this.points = 0;
-        this.lives = 3;
+        this.lives = 5;
         this.level = 1;
         this.stepMoveCount = 0;
         this.reachedMiddle = false;
@@ -509,14 +575,28 @@
 
       drawRows() {
         for (let row = 0; row < this.rows; row += 1) {
-          if (row === 0 || row === 1 || row === 5 || row === 10 || row === 11) {
-            this.context.fillStyle = '#3e7a48';
-          } else if (row >= 2 && row <= 4) {
-            this.context.fillStyle = '#306e9f';
+          if (row === 0 || row === 1 || row === 4 || row === 5 || row === 9 || row === 10 || row === 11) {
+            const grad = this.context.createLinearGradient(0, row * this.cellSize, this.canvas.width, (row + 1) * this.cellSize);
+            grad.addColorStop(0, '#3f8f52');
+            grad.addColorStop(1, '#2f6f3f');
+            this.context.fillStyle = grad;
+          } else if (row >= 2 && row <= 3) {
+            const grad = this.context.createLinearGradient(0, row * this.cellSize, this.canvas.width, (row + 1) * this.cellSize);
+            grad.addColorStop(0, '#2d7ab2');
+            grad.addColorStop(1, '#1f5f8f');
+            this.context.fillStyle = grad;
           } else {
-            this.context.fillStyle = '#4d4d4d';
+            const grad = this.context.createLinearGradient(0, row * this.cellSize, this.canvas.width, (row + 1) * this.cellSize);
+            grad.addColorStop(0, '#666');
+            grad.addColorStop(1, '#444');
+            this.context.fillStyle = grad;
           }
           this.context.fillRect(0, row * this.cellSize, this.canvas.width, this.cellSize);
+
+          if (row >= 6 && row <= 8) {
+            this.context.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            this.context.fillRect(0, row * this.cellSize + this.cellSize * 0.45, this.canvas.width, 2);
+          }
         }
       }
 
